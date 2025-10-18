@@ -200,8 +200,30 @@
                     id: 'lab0-1',
                     title: { en: '0.1 Set up your Lab Environment', fr: '0.1 Configurer votre Environnement de Laboratoire' },
                     overview: {
-                        en: `In this section, we prepare our lab environment. We have multiple controllers pre-installed on a complete SDN_ENSTTIC VM (including Floodlight, Ryu, ODL, ONOS, and Mininet). You will download and import this image file using a desktop virtualization application like VirtualBox or VMware.`,
-                        fr: `Dans cette section, nous préparons notre environnement de laboratoire. Nous disposons de plusieurs contrôleurs pré-installés sur une VM complète SDN_ENSTTIC (incluant Floodlight, Ryu, ODL, ONOS et Mininet). Vous téléchargerez et importerez ce fichier image à l'aide d'une application de virtualisation de bureau comme VirtualBox ou VMware.`
+                        objective: {
+                            en: "To set up and configure the virtualized lab environment, including the Mininet VM and an external controller VM, ensuring they can communicate.",
+                            fr: "Mettre en place et configurer l'environnement de laboratoire virtualisé, y compris la VM Mininet et une VM de contrôleur externe, en s'assurant qu'elles peuvent communiquer."
+                        },
+                        requirements: {
+                            en: "A host machine with a virtualization application (VirtualBox or VMware) and the provided SDN_ENSTTIC VM images.",
+                            fr: "Une machine hôte avec une application de virtualisation (VirtualBox ou VMware) et les images VM SDN_ENSTTIC fournies."
+                        },
+                        keyConcepts: {
+                            en: "Virtualization, Bridged Networking, Host-Only Networking, Static IP Addressing.",
+                            fr: "Virtualisation, Réseau par Pont, Réseau Privé Hôte, Adressage IP Statique."
+                        },
+                        howItWorks: {
+                            en: "This lab involves importing pre-configured virtual machines and setting up their network adapters. A bridged adapter provides internet access, while a host-only adapter creates a private network between the VMs and the host machine, allowing them to communicate using static IP addresses.",
+                            fr: "Ce TP implique l'importation de machines virtuelles pré-configurées et la configuration de leurs adaptateurs réseau. Un adaptateur en mode pont fournit un accès à Internet, tandis qu'un adaptateur de réseau privé hôte crée un réseau privé entre les VM et la machine hôte, leur permettant de communiquer à l'aide d'adresses IP statiques."
+                        },
+                        learningOutcomes: {
+                            en: "You will be able to import and configure virtual machines for network simulation and establish a stable communication channel between the network emulator (Mininet) and a remote SDN controller.",
+                            fr: "Vous serez capable d'importer et de configurer des machines virtuelles pour la simulation de réseau et d'établir un canal de communication stable entre l'émulateur de réseau (Mininet) et un contrôleur SDN distant."
+                        },
+                        realWorld: {
+                            en: "Setting up isolated virtual environments is a standard practice in network engineering and software development for testing configurations and applications without affecting production systems.",
+                            fr: "La mise en place d'environnements virtuels isolés est une pratique courante en ingénierie réseau et en développement logiciel pour tester des configurations et des applications sans affecter les systèmes de production."
+                        }
                     },
                     diagram: `graph TD; subgraph "LAB Host <br> 192.168.1.100"; VBox(VirtualBox/VMware); end; VBox --> MininetVM("Mininet VM <br> 192.168.1.51"); VBox --> HPeVM("HPE Controller VM <br> 192.168.1.50");`,
                     steps: [
@@ -211,7 +233,7 @@
                         { en: "<strong>Set Static IPs:</strong> To ensure consistent communication, assign static IP addresses to both virtual machines on the host-only network.", fr: "<strong>Définir les IP Statiques :</strong> Pour assurer une communication cohérente, attribuez des adresses IP statiques aux deux machines virtuelles sur le réseau privé hôte." },
                     ],
                     implementation: [
-                        { en: "Configure the static IP for the Mininet VM. Access it (user: code>mininet</code>, pass: <code>mininet</code>) and edit <code>/etc/network/interfaces</code>:", fr: "Configurez l'IP statique pour la VM Mininet. Accédez-y (user: <code>mininet</code>, pass: <code>mininet</code>) et modifiez <code>/etc/network/interfaces</code> :", code: `sudo nano /etc/network/interfaces\n\n# Add these lines for the host-only adapter (e.g., eth1)\nauto eth1\niface eth1 inet static\n    address 192.168.1.51\n    netmask 255.255.255.0`, lang: 'bash' },
+                        { en: "Configure the static IP for the Mininet VM. Access it (user: <code>mininet</code>, pass: <code>mininet</code>) and edit <code>/etc/network/interfaces</code>:", fr: "Configurez l'IP statique pour la VM Mininet. Accédez-y (user: <code>mininet</code>, pass: <code>mininet</code>) et modifiez <code>/etc/network/interfaces</code> :", code: `sudo nano /etc/network/interfaces\n\n# Add these lines for the host-only adapter (e.g., eth1)\nauto eth1\niface eth1 inet static\n    address 192.168.1.51\n    netmask 255.255.255.0`, lang: 'bash' },
                         { en: "Configure the static IP for the HPE Controller VM. Access it (user: <code>sdn</code>, pass: <code>skyline</code>) and perform a similar edit:", fr: "Configurez l'IP statique pour la VM du contrôleur HPE. Accédez-y (user: <code>sdn</code>, pass: <code>skyline</code>) et effectuez une modification similaire :", code: `sudo nano /etc/network/interfaces\n\n# Add these lines for the host-only adapter\nauto eth1\niface eth1 inet static\n    address 192.168.1.50\n    netmask 255.255.255.0`, lang: 'bash' },
                         { en: "After saving the changes, reboot both VMs with <code>sudo reboot</code>.", fr: "Après avoir enregistré les modifications, redémarrez les deux VM avec <code>sudo reboot</code>."}
                     ],
@@ -233,8 +255,10 @@
                     id: 'lab1-1',
                     title: { en: '1.1 About Mininet', fr: '1.1 À Propos de Mininet' },
                     overview: {
-                        en: `Mininet is a network emulator that provides an effective network test bed environment to work with virtual hosts, switches, controllers, and links. Key features include scalability up to hundreds of nodes, suitability for research and development (code can be moved to real hardware with minimal changes), a comprehensive Python API, and support for custom topologies. It is an inexpensive and easily reconfigurable alternative to hardware-based testbeds.`,
-                        fr: `Mininet est un émulateur de réseau qui fournit un environnement de banc d'essai réseau efficace pour travailler avec des hôtes, des commutateurs, des contrôleurs et des liens virtuels. Ses caractéristiques clés incluent la capacité de monter en charge jusqu'à des centaines de nœuds, son adéquation pour la recherche et le développement (le code peut être transféré sur du matériel réel avec des modifications minimes), une API Python complète et la prise en charge de topologies personnalisées. C'est une alternative peu coûteuse et facilement reconfigurable aux bancs d'essai matériels.`
+                        objective: {en: "Understand the purpose and key features of the Mininet network emulator.", fr: "Comprendre l'objectif et les fonctionnalités clés de l'émulateur de réseau Mininet."},
+                        keyConcepts: {en: "Network Emulation, Virtual Hosts, Virtual Switches, Python API.", fr: "Émulation de Réseau, Hôtes Virtuels, Commutateurs Virtuels, API Python."},
+                        howItWorks: {en: "Mininet uses Linux network namespaces to create lightweight virtual hosts and switches on a single OS kernel. This allows it to rapidly create and tear down complex network topologies for testing and development.", fr: "Mininet utilise les espaces de noms réseau de Linux pour créer des hôtes et des commutateurs virtuels légers sur un seul noyau de système d'exploitation. Cela lui permet de créer et de détruire rapidement des topologies réseau complexes pour les tests et le développement."},
+                        learningOutcomes: {en: "You will understand why Mininet is a crucial tool for SDN development and be familiar with its core capabilities.", fr: "Vous comprendrez pourquoi Mininet est un outil crucial pour le développement SDN et serez familiarisé avec ses capacités de base."}
                     },
                     diagram: ``,
                     steps: [],
@@ -246,8 +270,11 @@
                     id: 'lab1-2',
                     title: { en: '1.2 Mininet Commands', fr: '1.2 Commandes Mininet' },
                     overview: {
-                        en: `This section covers the essential commands for interacting with the Mininet environment, from basic inspection to creating custom topologies.`,
-                        fr: `Cette section couvre les commandes essentielles pour interagir avec l'environnement Mininet, de l'inspection de base à la création de topologies personnalisées.`
+                        objective: {en: "Learn the basic Mininet command-line interface (CLI) commands for interacting with a virtual network.", fr: "Apprendre les commandes de base de l'interface en ligne de commande (CLI) de Mininet pour interagir avec un réseau virtuel."},
+                        requirements: {en: "A running Mininet instance.", fr: "Une instance Mininet en cours d'exécution."},
+                        keyConcepts: {en: "CLI Interaction, Node Inspection, Connectivity Testing.", fr: "Interaction CLI, Inspection des Nœuds, Test de Connectivité."},
+                        howItWorks: {en: "The Mininet CLI provides a simple yet powerful way to manage the emulated network. Commands like `nodes`, `net`, and `pingall` allow for immediate inspection and validation of the topology.", fr: "Le CLI de Mininet offre un moyen simple mais puissant de gérer le réseau émulé. Des commandes comme `nodes`, `net` et `pingall` permettent une inspection et une validation immédiates de la topologie."},
+                        learningOutcomes: {en: "You will be able to start, inspect, and test basic network topologies using the Mininet CLI.", fr: "Vous serez capable de démarrer, inspecter et tester des topologies réseau de base en utilisant le CLI de Mininet."}
                     },
                     diagram: ``,
                     steps: [],
@@ -271,8 +298,8 @@
                     id: 'lab1-3',
                     title: { en: '1.3 Common Command Reference', fr: '1.3 Référence des Commandes Courantes' },
                     overview: {
-                        en: `The table below lists the most commonly used Mininet commands, serving as a quick reference.`,
-                        fr: `Le tableau ci-dessous répertorie les commandes Mininet les plus couramment utilisées, servant de référence rapide.`
+                        objective: {en: "Provide a quick reference table for the most frequently used commands in the Mininet environment.", fr: "Fournir un tableau de référence rapide pour les commandes les plus fréquemment utilisées dans l'environnement Mininet."},
+                        learningOutcomes: {en: "You will have a handy reference for common Mininet and Open vSwitch commands.", fr: "Vous disposerez d'une référence pratique pour les commandes courantes de Mininet et Open vSwitch."}
                     },
                     diagram: ``,
                     steps: [
@@ -325,8 +352,11 @@
                     id: 'lab2-1',
                     title: { en: '2.1 About Ryu Controller', fr: '2.1 À propos du contrôleur Ryu' },
                     overview: {
-                        en: `Ryu is an open-source SDN controller written in Python, known for its component-based architecture. This modularity allows for easy extension of its functionality through custom applications. <br><br> Key features include: <ul><li><strong>Multi-protocol support:</strong> Ryu supports various southbound APIs, including OpenFlow (multiple versions), NETCONF, and OF-Config, enabling it to manage diverse network devices.</li><li><strong>Python-based:</strong> Its implementation in Python makes it relatively easy to learn, develop for, and contribute to, fostering a large and active community.</li><li><strong>Extensibility:</strong> The component-based architecture allows developers to create and integrate custom applications to tailor Ryu's functionality to specific network needs.</li><li><strong>OpenFlow compatibility:</strong> Ryu supports multiple versions of the OpenFlow protocol, ensuring compatibility with a wide range of OpenFlow-enabled switches.</li></ul>`,
-                        fr: `Ryu est un contrôleur SDN open-source écrit en Python, connu pour son architecture à base de composants. Cette modularité permet une extension facile de ses fonctionnalités via des applications personnalisées. <br><br> Les caractéristiques clés incluent : <ul><li><strong>Prise en charge multi-protocoles :</strong> Ryu prend en charge diverses API southbound, y compris OpenFlow (plusieurs versions), NETCONF et OF-Config, ce qui lui permet de gérer divers périphériques réseau.</li><li><strong>Basé sur Python :</strong> Son implémentation en Python le rend relativement facile à apprendre, à développer et à contribuer, favorisant une communauté large et active.</li><li><strong>Extensibilité :</strong> L'architecture à base de composants permet aux développeurs de créer et d'intégrer des applications personnalisées pour adapter les fonctionnalités de Ryu à des besoins réseau spécifiques.</li><li><strong>Compatibilité OpenFlow :</strong> Ryu prend en charge plusieurs versions du protocole OpenFlow, assurant la compatibilité avec une large gamme de commutateurs compatibles OpenFlow.</li></ul>`
+                        objective: {en: "Understand the role and architecture of the Ryu SDN controller.", fr: "Comprendre le rôle et l'architecture du contrôleur SDN Ryu."},
+                        keyConcepts: {en: "SDN Controller, Component-Based Architecture, Southbound API, OpenFlow.", fr: "Contrôleur SDN, Architecture à base de composants, API Southbound, OpenFlow."},
+                        howItWorks: {en: "Ryu acts as the 'brain' of the network. It communicates with switches using the OpenFlow protocol to install flow rules and manage network behavior. Its component-based architecture allows you to write custom Python applications to define how the network should operate.", fr: "Ryu agit comme le 'cerveau' du réseau. Il communique avec les commutateurs en utilisant le protocole OpenFlow pour installer des règles de flux et gérer le comportement du réseau. Son architecture à base de composants vous permet d'écrire des applications Python personnalisées pour définir comment le réseau doit fonctionner."},
+                        learningOutcomes: {en: "You will be familiar with the purpose of an SDN controller and the key features of Ryu.", fr: "Vous serez familiarisé avec le but d'un contrôleur SDN et les fonctionnalités clés de Ryu."},
+                        realWorld: {en: "Controllers like Ryu are used in data centers and enterprise networks to automate network configuration, implement custom routing policies, and enhance network security.", fr: "Les contrôleurs comme Ryu sont utilisés dans les centres de données et les réseaux d'entreprise pour automatiser la configuration du réseau, mettre en œuvre des politiques de routage personnalisées et améliorer la sécurité du réseau."}
                     },
                     diagram: ``,
                     steps: [],
@@ -338,8 +368,11 @@
                     id: 'lab2-2',
                     title: { en: '2.2 Confirming the Testbed is Operational', fr: '2.2 Confirmation de l\'Opérationnalité du Banc d\'Essai' },
                     overview: {
-                        en: `The Ryu controller is already installed on the SDN_ENSTTIC VM. This lab confirms that the testbed is fully operational by connecting a Mininet topology to a running Ryu application.`,
-                        fr: `Le contrôleur Ryu est déjà installé sur la VM SDN_ENSTTIC. Ce TP confirme que le banc d'essai est pleinement opérationnel en connectant une topologie Mininet à une application Ryu en cours d'exécution.`
+                       objective: {en: "Verify that the Mininet and Ryu components are installed correctly and can communicate with each other.", fr: "Vérifier que les composants Mininet et Ryu sont correctement installés et peuvent communiquer entre eux."},
+                       requirements: {en: "A running SDN_ENSTTIC VM.", fr: "Une VM SDN_ENSTTIC en cours d'exécution."},
+                       keyConcepts: {en: "Remote Controller, OpenFlow Protocol, Reactive Forwarding.", fr: "Contrôleur Distant, Protocole OpenFlow, Transfert Réactif."},
+                       howItWorks: {en: "We start a basic Ryu application (a simple L2 switch) and then launch a Mininet topology configured to connect to this 'remote' controller. A successful `pingall` demonstrates that the switches are correctly communicating with Ryu and that Ryu is installing the necessary flow rules.", fr: "Nous démarrons une application Ryu de base (un simple commutateur L2) puis lançons une topologie Mininet configurée pour se connecter à ce contrôleur 'distant'. Un `pingall` réussi démontre que les commutateurs communiquent correctement avec Ryu et que Ryu installe les règles de flux nécessaires."},
+                       learningOutcomes: {en: "You will be able to launch a Mininet topology connected to a Ryu controller and verify its operational state.", fr: "Vous serez capable de lancer une topologie Mininet connectée à un contrôleur Ryu et de vérifier son état de fonctionnement."}
                     },
                     diagram: `graph TD; C0(Ryu Controller) --> S1(OpenFlow Switch); S1 --> H1("h1 <br> 10.1.1.1"); S1 --> H2("h2 <br> 10.1.1.2"); S1 --> H3("h3 <br> 10.1.1.3"); S1 --> H4("h4 <br> 10.1.1.4");`,
                     steps: [
@@ -363,8 +396,11 @@
                     id: 'lab2-3',
                     title: { en: '2.3 Testing Ryu with Flow Manager', fr: '2.3 Tester Ryu avec Flow Manager' },
                     overview: {
-                        en: `This lab introduces Flow Manager, a graphical user interface for the Ryu controller, and confirms that the entire testbed is operational by running a simple topology and inspecting the OpenFlow messages and flow rules.`,
-                        fr: `Ce TP présente Flow Manager, une interface utilisateur graphique pour le contrôleur Ryu, et confirme que l'ensemble du banc d'essai est opérationnel en exécutant une topologie simple et en inspectant les messages OpenFlow et les règles de flux.`
+                        objective: {en: "Use a graphical user interface (GUI) to visualize the network topology and inspect flow rules managed by the Ryu controller.", fr: "Utiliser une interface utilisateur graphique (GUI) pour visualiser la topologie du réseau et inspecter les règles de flux gérées par le contrôleur Ryu."},
+                        requirements: {en: "Completion of Lab 2.2.", fr: "Avoir terminé le TP 2.2."},
+                        keyConcepts: {en: "Topology Discovery, GUI Visualization, Link Layer Discovery Protocol (LLDP).", fr: "Découverte de Topologie, Visualisation GUI, Protocole de Découverte de Couche de Liaison (LLDP)."},
+                        howItWorks: {en: "By running Ryu with the `--observe-links` flag and the `flowmanager` application, the controller uses LLDP packets to discover how switches are interconnected. The Flow Manager GUI then uses this information to draw a real-time map of the network.", fr: "En exécutant Ryu avec l'indicateur `--observe-links` et l'application `flowmanager`, le contrôleur utilise des paquets LLDP pour découvrir comment les commutateurs sont interconnectés. L'interface graphique de Flow Manager utilise ensuite ces informations pour dessiner une carte en temps réel du réseau."},
+                        learningOutcomes: {en: "You will be able to launch Ryu with multiple applications and use a GUI to monitor an SDN network.", fr: "Vous serez capable de lancer Ryu avec plusieurs applications et d'utiliser une interface graphique pour surveiller un réseau SDN."}
                     },
                     diagram: `graph TD; C(Ryu Controller); subgraph "Tree Topology (depth=2, fanout=2)"; S1 --- S2 & S3; end; subgraph "Hosts"; S2 --> H1("h1"); S2 --> H2("h2"); S3 --> H3("h3"); S3 --> H4("h4"); end; C -.-> S1;`,
                     steps: [
@@ -388,7 +424,13 @@
                 {
                     id: 'lab2-4',
                     title: { en: '2.4 OpenFlow Connection Handshake', fr: '2.4 Handshake de Connexion OpenFlow' },
-                    overview: { en: `This lab uses Wireshark to inspect the initial handshake sequence between a Mininet switch and a local Ryu controller. This sequence establishes the OpenFlow channel and allows the controller to learn about the switch's capabilities.`, fr: `Ce TP utilise Wireshark pour inspecter la séquence de handshake initiale entre un commutateur Mininet et un contrôleur Ryu local. Cette séquence établit le canal OpenFlow et permet au contrôleur de connaître les capacités du commutateur.` },
+                    overview: {
+                        objective: {en: "Observe and understand the initial message exchange between an OpenFlow switch and an SDN controller.", fr: "Observer et comprendre l'échange de messages initial entre un commutateur OpenFlow et un contrôleur SDN."},
+                        requirements: {en: "Wireshark and a running Mininet/Ryu environment.", fr: "Wireshark et un environnement Mininet/Ryu fonctionnel."},
+                        keyConcepts: {en: "OpenFlow Handshake, HELLO message, FEATURES_REQUEST/REPLY, PACKET_IN, PACKET_OUT, FLOW_MOD.", fr: "Handshake OpenFlow, message HELLO, FEATURES_REQUEST/REPLY, PACKET_IN, PACKET_OUT, FLOW_MOD."},
+                        howItWorks: {en: "When a switch connects to a controller, they perform a handshake to negotiate the protocol version and exchange capabilities. This lab uses Wireshark to capture and analyze this critical setup communication, as well as the reactive messages that follow when traffic is generated.", fr: "Lorsqu'un commutateur se connecte à un contrôleur, ils effectuent un handshake pour négocier la version du protocole et échanger leurs capacités. Ce TP utilise Wireshark pour capturer et analyser cette communication de configuration critique, ainsi que les messages réactifs qui suivent lorsque du trafic est généré."},
+                        learningOutcomes: {en: "You will be able to identify and explain the purpose of the fundamental OpenFlow messages used to establish control and handle network traffic.", fr: "Vous serez capable d'identifier et d'expliquer le but des messages OpenFlow fondamentaux utilisés pour établir le contrôle et gérer le trafic réseau."}
+                    },
                     diagram: `sequenceDiagram; participant S1 as Switch; participant C as Ryu Controller; S1->>C: HELLO; C-->>S1: HELLO; C->>S1: FEATURES_REQUEST; S1-->>C: FEATURES_REPLY; C->>S1: SET_CONFIG; S1-->>C: SET_CONFIG_REPLY;`,
                     steps: [
                         {en: "Start Wireshark and begin capturing on the loopback interface (`lo`), as both Mininet and Ryu are running locally.", fr: "Démarrez Wireshark et commencez à capturer sur l'interface de loopback (`lo`), car Mininet and Ryu s'exécutent tous deux localement."},
@@ -537,21 +579,66 @@
                  {
                     id: 'lab4-1',
                     title: { en: '4.1 Flow Table Demo', fr: '4.1 Démo de la Table de Flux' },
-                    overview: { en: `This demo illustrates how to inspect the flow table of an OpenFlow switch. The content here is similar to what a controller would install. For a deeper dive into manual flow installation, see the labs in the <strong>Open vSwitch Deep Dive</strong> section.`, fr: `Cette démo illustre comment inspecter la table de flux d'un commutateur OpenFlow. Le contenu ici est similaire à ce qu'un contrôleur installerait. Pour une exploration plus approfondie de l'installation manuelle de flux, consultez les TPs de la section <strong>Plongée dans Open vSwitch</strong>.` },
-                    diagram: `graph TD; C(Controller) -- "manages" --> S1 & S2; S1 --- S2; S1 --> H1("h1 <br> 10.0.0.1"); S2 --> H2("h2 <br> 10.0.0.2");`,
-                    steps: [],
-                    implementation: [],
-                    testing: [],
+                    overview: {
+                        objective: {en: "To inspect the default flow table of an OpenFlow switch after it connects to a controller and to understand the purpose of each pre-installed rule.", fr: "Inspecter la table de flux par défaut d'un commutateur OpenFlow après sa connexion à un contrôleur et comprendre le but de chaque règle pré-installée."},
+                        requirements: {en: "A running SDN lab environment with Mininet and a controller (Ryu or HPE).", fr: "Un environnement de laboratoire SDN fonctionnel avec Mininet et un contrôleur (Ryu ou HPE)."},
+                        keyConcepts: {en: "Flow Table, Flow Entry, Priority, Match Fields, Actions.", fr: "Table de Flux, Entrée de Flux, Priorité, Champs de Correspondance, Actions."},
+                        howItWorks: {en: "When a switch connects to an SDN controller, the controller typically installs a set of default flow rules. These rules handle common traffic types (like discovery and ARP) and define a default behavior for unmatched packets (the 'miss entry'). This lab demonstrates how to view and interpret these foundational rules.", fr: "Lorsqu'un commutateur se connecte à un contrôleur SDN, le contrôleur installe généralement un ensemble de règles de flux par défaut. Ces règles gèrent les types de trafic courants (comme la découverte et l'ARP) et définissent un comportement par défaut pour les paquets non correspondants (l'« entrée manquée »). Ce TP montre comment visualiser et interpréter ces règles fondamentales."},
+                        learningOutcomes: {en: "You will be able to dump the flow table from an Open vSwitch and interpret the meaning of different flow entries based on their priority, match fields, and actions.", fr: "Vous serez capable d'afficher la table de flux d'un Open vSwitch et d'interpréter la signification des différentes entrées de flux en fonction de leur priorité, de leurs champs de correspondance et de leurs actions."}
+                    },
+                    diagram: `graph TD; C(Controller) -- "manages" --> S1 & S2; S1 --- S2; S1 --> H1("h1"); S2 --> H2("h2");`,
+                    steps: [
+                        {en: "<strong>BDDP Traffic Handling:</strong> A high-priority rule (priority=60000) matches Ethernet type 0x8999 (BDDP) and sends these packets to the controller for Layer 2 discovery.", fr: "<strong>Gestion du trafic BDDP :</strong> Une règle de haute priorité (priority=60000) correspond aux paquets de type Ethernet 0x8999 (BDDP) et les envoie au contrôleur pour la découverte de couche 2."},
+                        {en: "<strong>UDP Traffic Handling:</strong> Rules with priority=31500 match specific UDP ports (67 and 68), forwarding them to the controller and then processing them normally.", fr: "<strong>Gestion du trafic UDP :</strong> Des règles avec priority=31500 correspondent à des ports UDP spécifiques (67 et 68), les transférant au contrôleur puis les traitant normalement."},
+                        {en: "<strong>ARP Request Handling:</strong> A rule with priority=34000 forwards ARP requests arriving on a specific port normally, while another rule (priority=31000) sends other ARP packets to the controller.", fr: "<strong>Gestion des requêtes ARP :</strong> Une règle avec priority=34000 transfère normalement les requêtes ARP arrivant sur un port spécifique, tandis qu'une autre règle (priority=31000) envoie les autres paquets ARP au contrôleur."},
+                        {en: "<strong>Default Flow Entry:</strong> A low-priority rule (priority=0), also known as a 'miss entry', acts as a catch-all, forwarding any packet that doesn't match a higher-priority rule to the controller.", fr: "<strong>Entrée de flux par défaut :</strong> Une règle de basse priorité (priority=0), également appelée 'entrée manquée', agit comme un fourre-tout, transférant tout paquet qui ne correspond pas à une règle de priorité supérieure au contrôleur."}
+                    ],
+                    implementation: [
+                        {en: "On the Mininet VM, start a linear topology with two switches, connected to a remote controller.", fr: "Sur la VM Mininet, démarrez une topologie linéaire avec deux commutateurs, connectée à un contrôleur distant.", code: "sudo mn --controller=remote,ip=192.168.1.50 --topo=linear,2 --switch=ovsk,protocols=OpenFlow13 --mac", lang: "bash"}
+                    ],
+                    testing: [
+                        {en: "Generate some traffic between the hosts.", fr: "Générez du trafic entre les hôtes.", code: "mininet> pingall", lang: "bash"},
+                        {en: "Dump the flows from switch s1 to inspect the rules installed by the controller.", fr: "Affichez les flux du commutateur s1 pour inspecter les règles installées par le contrôleur.", code: "mininet> sh ovs-ofctl -O OpenFlow13 dump-flows s1", lang: "bash"},
+                        {en: "Example flow table output:", fr: "Exemple de sortie de la table de flux :", code: `OFPT_FLOW_REPLY (OF1.3) (xid=0x2):
+ priority=60000, dl_type=0x8999 actions=CONTROLLER:65535
+ priority=34000, arp,in_port=2 actions=NORMAL
+ priority=31500, udp,tp_src=68,tp_dst=67 actions=CONTROLLER:65535,NORMAL
+ priority=31500, udp,tp_src=67,tp_dst=68 actions=CONTROLLER:65535,NORMAL
+ priority=31000, arp actions=CONTROLLER:65535,NORMAL
+ priority=0 actions=CONTROLLER:65535`, lang: 'bash'}
+                    ],
                     troubleshooting: []
                 },
                 {
                     id: 'lab4-2',
                     title: { en: '4.2 Flow Installation: Reactive vs. Proactive', fr: '4.2 Installation de Flux : Réactif vs Proactif' },
-                    overview: { en: `This lab demonstrates the two primary modes of flow installation in SDN. <strong>Reactive:</strong> The controller installs flow rules only after a new, unknown packet arrives at a switch. <strong>Proactive:</strong> Flow rules are pre-populated in the switch's flow table by the controller or an administrator. For a detailed breakdown of the messages involved in the reactive process (PACKET_IN, etc.), please refer to <strong>Lab 2.4: OpenFlow Connection Handshake</strong>. For hands-on proactive examples, see the <strong>Open vSwitch Deep Dive</strong> section.`, fr: `Ce TP démontre les deux modes principaux d'installation de flux en SDN. <strong>Réactif :</strong> Le contrôleur n'installe les règles de flux qu'après l'arrivée d'un nouveau paquet inconnu sur un commutateur. <strong>Proactif :</strong> Les règles de flux sont pré-chargées dans la table de flux du commutateur par le contrôleur ou un administrateur. Pour une description détaillée des messages impliqués dans le processus réactif (PACKET_IN, etc.), veuillez vous référer au <strong>TP 2.4 : Handshake de Connexion OpenFlow</strong>. Pour des exemples pratiques proactifs, consultez la section <strong>Plongée dans Open vSwitch</strong>.` },
-                    diagram: ``,
-                    steps: [],
-                    implementation: [],
-                    testing: [],
+                    overview: {
+                        objective: {en: "To practically demonstrate and contrast the two primary modes of flow rule installation in an SDN environment: reactive and proactive.", fr: "Démontrer et contraster de manière pratique les deux modes principaux d'installation de règles de flux dans un environnement SDN : réactif et proactif."},
+                        keyConcepts: {en: "Reactive Forwarding, Proactive Forwarding, Packet-In Message, Flow Table.", fr: "Transfert Réactif, Transfert Proactif, Message Packet-In, Table de Flux."},
+                        howItWorks: {en: "In the <strong>Reactive</strong> scenario, the switch has no initial forwarding rule and must ask the controller what to do when the first packet arrives. In the <strong>Proactive</strong> scenario, we, acting as the administrator, will manually pre-install the rules, so the switch knows how to handle the traffic without consulting a controller.", fr: "Dans le scénario <strong>Réactif</strong>, le commutateur n'a pas de règle de transfert initiale et doit demander au contrôleur quoi faire lorsque le premier paquet arrive. Dans le scénario <strong>Proactif</strong>, nous, agissant en tant qu'administrateur, pré-installerons manuellement les règles, afin que le commutateur sache comment gérer le trafic sans consulter de contrôleur."},
+                        learningOutcomes: {en: "You will be able to explain the difference between reactive and proactive flow installation and demonstrate both methods using Mininet and `ovs-ofctl`.", fr: "Vous serez capable d'expliquer la différence entre l'installation de flux réactive et proactive et de démontrer les deux méthodes en utilisant Mininet et `ovs-ofctl`."}
+                    },
+                    diagram: `graph TD; R(Reactive); P(Proactive); R --> R1(Packet Arrives at Switch); R1 --> R2{Flow Match?}; R2 -- No --> R3(Send Packet-In to Controller); R3 --> R4(Controller sends Flow-Mod); R4 --> R5(Switch Installs Flow); R5 --> R6(Packet Forwarded); R2 -- Yes --> R6; P --> P1(Admin/Controller Installs Flows); P1 --> P2(Packet Arrives at Switch); P2 --> P3{Flow Match?}; P3 -- Yes --> P4(Packet Forwarded);`,
+                    steps: [
+                        {en: "This lab is in two parts. First, we will observe the reactive model using a Ryu controller.", fr: "Ce TP est en deux parties. D'abord, nous observerons le modèle réactif en utilisant un contrôleur Ryu."},
+                        {en: "In the second part, we will disconnect the controller and manually install flows to demonstrate the proactive model.", fr: "Dans la deuxième partie, nous déconnecterons le contrôleur et installerons manuellement des flux pour démontrer le modèle proactif."}
+                    ],
+                    implementation: [
+                        {en: "For both parts of the lab, start the following simple topology. For Part 1, you will also need a Ryu controller running.", fr: "Pour les deux parties du TP, démarrez la topologie simple suivante. Pour la Partie 1, vous aurez également besoin d'un contrôleur Ryu en cours d'exécution."},
+                        {en: "Start the Ryu controller in a separate terminal (for Part 1 only):", fr: "Démarrez le contrôleur Ryu dans un terminal séparé (pour la Partie 1 uniquement) :", code: "ryu-manager ryu.app.simple_switch_13", lang: "bash"},
+                        {en: "Start Mininet for the demo:", fr: "Démarrez Mininet pour la démo :", code: "sudo mn --controller=remote,ip=127.0.0.1 --topo=single,2 --switch=ovsk,protocols=OpenFlow13 --mac", lang: "bash"}
+                    ],
+                    testing: [
+                        {en: "<strong>Part 1: Reactive Demonstration</strong>", fr: "<strong>Partie 1 : Démonstration Réactive</strong>"},
+                        {en: "1. Clear any existing flows from the switch to ensure it is empty.", fr: "1. Effacez tous les flux existants du commutateur pour vous assurer qu'il est vide.", code: "mininet> sh ovs-ofctl -O OpenFlow13 del-flows s1", lang: "bash"},
+                        {en: "2. Try to ping from h1 to h2. The first ping may show a slight delay or packet loss as the switch contacts the controller.", fr: "2. Essayez de pinger de h1 à h2. Le premier ping peut montrer un léger retard ou une perte de paquet pendant que le commutateur contacte le contrôleur.", code: "mininet> h1 ping h2 -c 1", lang: "bash"},
+                        {en: "3. Dump the flows again. You will now see new rules that the Ryu controller has installed to handle the traffic between h1 and h2.", fr: "3. Affichez à nouveau les flux. Vous verrez maintenant de nouvelles règles que le contrôleur Ryu a installées pour gérer le trafic entre h1 et h2.", code: "mininet> sh ovs-ofctl -O OpenFlow13 dump-flows s1", lang: "bash"},
+                        {en: "<strong>Part 2: Proactive Demonstration</strong>", fr: "<strong>Partie 2 : Démonstration Proactive</strong>"},
+                        {en: "1. Stop the Ryu controller process (use `ps -fA | grep ryu` to find its PID and `sudo kill [PID]`). Clear the flows again.", fr: "1. Arrêtez le processus du contrôleur Ryu (utilisez `ps -fA | grep ryu` pour trouver son PID et `sudo kill [PID]`). Effacez à nouveau les flux.", code: "mininet> sh ovs-ofctl -O OpenFlow13 del-flows s1", lang: "bash"},
+                        {en: "2. Try to ping from h1 to h2. It will fail because there is no controller to provide instructions.", fr: "2. Essayez de pinger de h1 à h2. Cela échouera car il n'y a pas de contrôleur pour fournir des instructions.", code: "mininet> h1 ping h2 -c 1", lang: "bash"},
+                        {en: "3. Manually install the flow rules to forward traffic between h1 (port 1) and h2 (port 2).", fr: "3. Installez manuellement les règles de flux pour transférer le trafic entre h1 (port 1) et h2 (port 2).", code: `mininet> sh ovs-ofctl -O OpenFlow13 add-flow s1 "priority=1,in_port=1,actions=output:2"\nmininet> sh ovs-ofctl -O OpenFlow13 add-flow s1 "priority=1,in_port=2,actions=output:1"`, lang: "bash"},
+                        {en: "4. Try the ping again. It will succeed immediately because the forwarding rules were already present in the switch.", fr: "4. Réessayez le ping. Il réussira immédiatement car les règles de transfert étaient déjà présentes dans le commutateur.", code: "mininet> h1 ping h2 -c 1", lang: "bash"}
+                    ],
                     troubleshooting: []
                 }
             ]
@@ -638,8 +725,11 @@ if __name__ == '__main__':
                     id: 'lab5-3',
                     title: { en: '5.3 Python API Topology Creation', fr: '5.3 Création de Topologie via l\'API Python' },
                     overview: {
-                        en: `The Mininet Python API allows for programmatic creation of complex and parameterized topologies. It is structured into three main levels: <ul><li><strong>Low-level API:</strong> Directly instantiate base classes like <code>Host</code> and <code>Switch</code>.</li><li><strong>Mid-level API:</strong> Use the main <code>Mininet</code> class methods like <code>addHost()</code> and <code>addSwitch()</code>.</li><li><strong>High-level API:</strong> Use the <code>Topo</code> class to create reusable, parameterized topology templates that can be easily shared and run from the command line. This lab focuses on the High-level API.</li></ul>`,
-                        fr: `L'API Python de Mininet permet la création programmatique de topologies complexes et paramétrées. Elle est structurée en trois niveaux principaux : <ul><li><strong>API de bas niveau :</strong> Instancier directement des classes de base comme <code>Host</code> et <code>Switch</code>.</li><li><strong>API de niveau intermédiaire :</strong> Utiliser les méthodes de la classe principale <code>Mininet</code> comme <code>addHost()</code> et <code>addSwitch()</code>.</li><li><strong>API de haut niveau :</strong> Utiliser la classe <code>Topo</code> pour créer des modèles de topologie réutilisables et paramétrés qui peuvent être facilement partagés et exécutés depuis la ligne de commande. Ce TP se concentre sur l'API de haut niveau.</li></ul>`
+                        objective: {en: "Learn to programmatically create custom network topologies using Mininet's high-level Python API.", fr: "Apprendre à créer programmatiquement des topologies de réseau personnalisées en utilisant l'API Python de haut niveau de Mininet."},
+                        requirements: {en: "Basic Python knowledge.", fr: "Connaissances de base en Python."},
+                        keyConcepts: {en: "High-Level API, Mid-Level API, Low-Level API, Topology Scripting.", fr: "API de haut niveau, API de niveau intermédiaire, API de bas niveau, Scripting de topologie."},
+                        howItWorks: {en: "Mininet's Python API allows for detailed, reusable, and parameterizable topology creation. By defining a class that inherits from `mininet.topo.Topo`, you can specify the exact nodes (hosts, switches) and links of your network in code. This script can then be executed directly or loaded by Mininet's CLI.", fr: "L'API Python de Mininet permet une création de topologie détaillée, réutilisable et paramétrable. En définissant une classe qui hérite de `mininet.topo.Topo`, vous pouvez spécifier les nœuds exacts (hôtes, commutateurs) et les liens de votre réseau dans le code. Ce script peut ensuite être exécuté directement ou chargé par le CLI de Mininet."},
+                        learningOutcomes: {en: "You will be able to write a Python script to define and run a custom Mininet topology.", fr: "Vous serez capable d'écrire un script Python pour définir et exécuter une topologie Mininet personnalisée."}
                     },
                     diagram: `graph TD; S1 --- S2; S1 --> H1("h1 <br> 10.0.0.1"); S1 --> H2("h2 <br> 10.0.0.2"); S2 --> H3("h3 <br> 10.0.0.3"); S2 --> H4("h4 <br> 10.0.0.4");`,
                     steps: [
@@ -773,6 +863,38 @@ class SimpleSwitchL2(app_manager.RyuApp):
                     testing: [
                         { en: "Run the controller and a suitable topology script. A `pingall` should succeed.", fr: "Exécutez le contrôleur et un script de topologie approprié. Un `pingall` devrait réussir."}
                     ],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab6-2',
+                    title: { en: '6.2 L3 Switch (IP Address Matching)', fr: '6.2 Commutateur L3 (Correspondance d\'adresse IP)'},
+                    overview: {
+                        objective: {en: "Evolve the L2 switch into an L3 switch that forwards packets based on destination IP addresses.", fr: "Faire évoluer le commutateur L2 en un commutateur L3 qui transfère les paquets en fonction des adresses IP de destination."},
+                        requirements: {en: "Completion of Lab 6.1 (L2 Switch).", fr: "Avoir terminé le TP 6.1 (Commutateur L2)."},
+                        keyConcepts: {en: "Layer 3 Forwarding, IP Packet Parsing, Routing Logic.", fr: "Transfert de Couche 3, Analyse de Paquets IP, Logique de Routage."},
+                        howItWorks: {en: "Instead of a MAC-to-port table, this controller maintains an IP-to-port table. When a packet arrives, the controller inspects its destination IP address and installs a flow rule to route it to the correct port. This application demonstrates how an SDN controller can implement routing logic.", fr: "Au lieu d'une table MAC-vers-port, ce contrôleur maintient une table IP-vers-port. Lorsqu'un paquet arrive, le contrôleur inspecte son adresse IP de destination et installe une règle de flux pour le router vers le port correct. Cette application montre comment un contrôleur SDN peut implémenter une logique de routage."},
+                        learningOutcomes: {en: "You will be able to write a Ryu application that parses IP headers and installs flow rules based on Layer 3 information.", fr: "Vous serez capable d'écrire une application Ryu qui analyse les en-têtes IP et installe des règles de flux basées sur les informations de la Couche 3."}
+                    },
+                    diagram: `graph TD; C(Ryu Controller); S1; S1 --> H1("h1 <br> 10.0.0.1"); S1 --> H2("h2 <br> 10.0.0.2"); C -- "IP-based Flow_Mod" --> S1;`,
+                    steps: [],
+                    implementation: [],
+                    testing: [],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab6-3',
+                    title: { en: '6.3 L4 Switch (Port Matching)', fr: '6.3 Commutateur L4 (Correspondance de Port)'},
+                    overview: {
+                        objective: {en: "Create an application-aware switch that forwards traffic based on Layer 4 TCP/UDP port numbers.", fr: "Créer un commutateur sensible aux applications qui transfère le trafic en fonction des numéros de port TCP/UDP de la Couche 4."},
+                        requirements: {en: "Completion of Lab 6.2 (L3 Switch).", fr: "Avoir terminé le TP 6.2 (Commutateur L3)."},
+                        keyConcepts: {en: "Layer 4 Matching, TCP/UDP Ports, Service Differentiation.", fr: "Correspondance de Couche 4, Ports TCP/UDP, Différenciation de Service."},
+                        howItWorks: {en: "This controller extends the L3 switch logic to inspect the transport layer header. It can identify the protocol (TCP or UDP) and the source/destination ports. This allows for fine-grained rules, such as allowing web traffic (TCP port 80) while blocking other services.", fr: "Ce contrôleur étend la logique du commutateur L3 pour inspecter l'en-tête de la couche de transport. Il peut identifier le protocole (TCP ou UDP) et les ports source/destination. Cela permet des règles granulaires, telles que l'autorisation du trafic web (port TCP 80) tout en bloquant d'autres services."},
+                        learningOutcomes: {en: "You will be able to write a Ryu application that can differentiate traffic based on application ports and enforce policies accordingly.", fr: "Vous serez capable d'écrire une application Ryu qui peut différencier le trafic en fonction des ports d'application et appliquer des politiques en conséquence."}
+                    },
+                    diagram: `graph TD; C(Ryu Controller); S1; H1("h1"); H2("h2"); S1 --> H1; S1 --> H2; C -- "Port-based Flow_Mod" --> S1;`,
+                    steps: [],
+                    implementation: [],
+                    testing: [],
                     troubleshooting: []
                 }
             ]
@@ -1044,7 +1166,17 @@ sh ovs-ofctl add-flow s1 priority=10,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3,actions=
 
             switch(tabKey) {
                 case 'overview':
-                    html += `<p>${lab.overview[state.currentLanguage]}</p>`;
+                    const overviewData = lab.overview;
+                    const titleMap = {
+                        en: { objective: "Objective", requirements: "Requirements", keyConcepts: "Key Concepts", howItWorks: "How It Works", learningOutcomes: "Learning Outcomes", advancedTip: "Advanced Tip", realWorld: "Real-World Applications" },
+                        fr: { objective: "Objectif", requirements: "Prérequis", keyConcepts: "Concepts Clés", howItWorks: "Comment Ça Marche", learningOutcomes: "Résultats d'Apprentissage", advancedTip: "Astuce Avancée", realWorld: "Applications Réelles" }
+                    };
+                    for (const key in titleMap.en) {
+                         if (overviewData[key] && overviewData[key][state.currentLanguage]) {
+                             html += `<h4 class="font-poppins mt-6 mb-2 text-lg accent-color">${titleMap[state.currentLanguage][key]}</h4>`;
+                             html += `<p>${overviewData[key][state.currentLanguage]}</p>`;
+                         }
+                    }
                     if (lab.diagram) {
                         const encodedDiagram = lab.diagram.replace(/"/g, '&quot;');
                         html += `<div class="my-6 p-4 border border-custom rounded-lg overflow-x-auto flex justify-center diagram-container" data-mermaid-code="${encodedDiagram}"><div class="mermaid">${lab.diagram}</div></div>`;
@@ -1205,7 +1337,21 @@ sh ovs-ofctl add-flow s1 priority=10,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3,actions=
         elements.explainBtn.addEventListener('click', () => {
             const lab = labsData[state.currentSectionId].labs[state.currentLabIndex];
             elements.modalTitle.textContent = `${getTranslation('modalTitle')}: ${lab.title[state.currentLanguage]}`;
-            elements.modalContent.innerHTML = lab.overview[state.currentLanguage]; 
+            
+            const overviewData = lab.overview;
+            let modalHtml = '';
+            const titleMap = {
+                en: { objective: "Objective", requirements: "Requirements", keyConcepts: "Key Concepts", howItWorks: "How It Works", learningOutcomes: "Learning Outcomes", advancedTip: "Advanced Tip", realWorld: "Real-World Applications" },
+                fr: { objective: "Objectif", requirements: "Prérequis", keyConcepts: "Concepts Clés", howItWorks: "Comment Ça Marche", learningOutcomes: "Résultats d'Apprentissage", advancedTip: "Astuce Avancée", realWorld: "Applications Réelles" }
+            };
+            for (const key in titleMap.en) {
+                 if (overviewData[key] && overviewData[key][state.currentLanguage]) {
+                     modalHtml += `<h4 class="font-poppins mt-4 mb-2 text-lg accent-color">${titleMap[state.currentLanguage][key]}</h4>`;
+                     modalHtml += `<p>${overviewData[key][state.currentLanguage]}</p>`;
+                 }
+            }
+
+            elements.modalContent.innerHTML = modalHtml; 
             elements.modal.style.display = 'flex';
         });
         
