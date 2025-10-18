@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en" class="light blue-theme">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive SDN Lab Manual</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap">
+    <style>
+        :root {
+            --bg-primary: #f8fafc; --bg-secondary: #ffffff; --bg-callout: #f1f5f9;
+            --text-primary: #334155; --text-secondary: #64748b; --text-headings: #0f172a;
+            --border-color: #e2e8f0; --border-accent: #004494; --border-warning: #f59e0b;
+            --accent-color: #004494; --accent-color-light: #eff6ff; --accent-text-light: #1e40af;
+            --code-bg: #f1f5f9; --code-text: #334155;
+        }
+        html.dark {
+            --bg-primary: #0f172a; --bg-secondary: #1e293b; --bg-callout: #334155;
+            --text-primary: #cbd5e1; --text-secondary: #94a3b8; --text-headings: #f1f5f9;
+            --border-color: #334155; --border-accent: #3b82f6; --border-warning: #f59e0b;
+            --accent-color-light: #1e293b; --accent-text-light: #60a5fa;
+            --code-bg: #020617; --code-text: #cbd5e1;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); transition: background-color 0.3s, color 0.3s; }
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; color: var(--text-headings); }
+        .bg-secondary { background-color: var(--bg-secondary); }
+        .border-custom { border-color: var(--border-color); }
+        .accent-color { color: var(--accent-color); }
+        .lab-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+        .tab-btn.active { color: var(--border-accent); border-bottom-color: var(--border-accent); }
+        .callout { background-color: var(--bg-callout); border-left-width: 4px; }
+        .callout-concept { border-color: var(--border-accent); }
+        .callout-info { border-color: #3b82f6; background-color: #eff6ff; }
+        html.dark .callout-info { background-color: #1e293b; }
+        .callout-warning { border-color: var(--border-warning); }
+        .step-icon { background-color: var(--accent-color-light); color: var(--accent-text-light); }
+        html.dark .step-icon { background-color: #334155; }
+        .mermaid { background-color: transparent; }
+        .prose pre { position: relative; }
+        .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; }
+        .prose table { width: 100%; border-collapse: collapse; }
+        .prose th, .prose td { border: 1px solid var(--border-color); padding: 8px; }
+        .prose th { background-color: var(--bg-callout); }
+        .prose ul { list-style-type: disc; padding-left: 1.5rem; }
+        .prose li { margin-bottom: 0.5rem; }
+        #zoom-modal-content .mermaid { width: 100%; height: 100%; overflow: auto; }
+        .diagram-container { cursor: zoom-in; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Progress Bar -->
+    <div class="fixed top-0 left-0 w-full h-1 z-50"><div id="progress-bar" class="h-1 w-0 transition-all duration-150" style="background-color: var(--accent-color);"></div></div>
+
+    <!-- Main Dashboard View -->
+    <div id="main-menu" class="min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <header class="flex justify-between items-center mb-10">
+                <div>
+                    <h1 class="text-3xl font-bold font-poppins"><span class="accent-color">SDN</span> Lab Manual</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="language-switcher" class="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"></button>
+                    <button id="theme-mode-toggle-main" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <svg id="theme-icon-main" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+                    </button>
+                </div>
+            </header>
+            <div id="main-menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Lab section cards will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Lab Viewer View -->
+    <div id="lab-viewer" class="hidden">
+        <header class="sticky top-0 bg-secondary/80 backdrop-blur-md border-b border-custom shadow-sm z-40">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <button id="back-to-menu" class="flex items-center text-sm font-semibold hover:accent-color transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    <span data-translate="backToMenu"></span>
+                </button>
+                <h2 id="lab-viewer-title" class="text-lg font-poppins font-bold text-center accent-color truncate"></h2>
+                <div class="flex items-center space-x-2">
+                    <button id="prev-lab-btn" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    </button>
+                    <button id="next-lab-btn" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                    <button id="theme-mode-toggle-viewer" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <svg id="theme-icon-viewer" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+                    </button>
+                </div>
+            </nav>
+        </header>
+        <main id="main-content" class="h-[calc(100vh-4rem)] overflow-y-auto">
+            <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <h1 id="lab-title" class="text-3xl font-bold font-poppins"></h1>
+                    <button id="explain-btn" class="explain-btn flex-shrink-0 ml-4 flex items-center bg-accent-color-light text-accent-text-light px-3 py-1.5 rounded-full text-sm font-semibold hover:opacity-80 transition-opacity">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M10 3.5a1.5 1.5 0 011.5 1.5.75.75 0 001.5 0A3 3 0 0010 2a3 3 0 00-3 3 .75.75 0 001.5 0A1.5 1.5 0 0110 3.5zM6.5 6.5a1.5 1.5 0 011.5-1.5.75.75 0 000-1.5A3 3 0 005 6.5a3 3 0 003 3 .75.75 0 000-1.5A1.5 1.5 0 016.5 6.5zM10 12a1.5 1.5 0 01-1.5-1.5.75.75 0 00-1.5 0A3 3 0 0010 13.5a3 3 0 003-3 .75.75 0 00-1.5 0A1.5 1.5 0 0110 12zm3.5 1.5a1.5 1.5 0 01-1.5 1.5.75.75 0 000 1.5a3 3 0 003-3 3 3 0 00-3-3 .75.75 0 000 1.5A1.5 1.5 0 0113.5 13.5z"></path></svg>
+                        <span data-translate="explain"></span>
+                    </button>
+                </div>
+                <div id="tabs-container" class="border-b border-custom mb-6"></div>
+                <div id="tab-content" class="prose dark:prose-invert max-w-none"></div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Explanation Modal -->
+    <div id="ai-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden bg-gray-900 bg-opacity-70">
+        <div class="bg-secondary rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-custom">
+                <h3 id="modal-title" class="text-xl font-bold font-poppins"></h3>
+                <button id="close-modal-btn" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="modal-content" class="prose dark:prose-invert max-w-none p-6 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- Zoom Modal for Diagrams -->
+    <div id="zoom-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 hidden bg-gray-900 bg-opacity-80">
+        <div class="bg-secondary rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col relative p-4">
+             <button id="close-zoom-modal-btn" class="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div id="zoom-modal-content" class="w-full h-full flex items-center justify-center">
+                <!-- Zoomed diagram will be rendered here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    // --- CONTENT.JS ---
+    const content = {
+        en: {
+            backToMenu: "Back to Menu",
+            explain: "Explain Concept",
+            modalTitle: "Explanation",
+            copied: "Copied!",
+            copy: "Copy",
+            tabs: {
+                overview: "Overview",
+                steps: "Steps",
+                implementation: "Implementation",
+                testing: "Testing",
+                troubleshooting: "Troubleshooting",
+            },
+            statuses: {
+                not_started: "Not Started",
+                in_progress: "In Progress",
+                complete: "Complete",
+            },
+            callouts: {
+                concept: "Concept",
+                info: "Info",
+                warning: "Warning",
+            }
+        },
+        fr: {
+            backToMenu: "Retour au Menu",
+            explain: "Expliquer le Concept",
+            modalTitle: "Explication",
+            copied: "Copié !",
+            copy: "Copier",
+            tabs: {
+                overview: "Aperçu",
+                steps: "Étapes",
+                implementation: "Implémentation",
+                testing: "Tests",
+                troubleshooting: "Dépannage",
+            },
+            statuses: {
+                not_started: "Non Commencé",
+                in_progress: "En Cours",
+                complete: "Terminé",
+            },
+            callouts: {
+                concept: "Concept",
+                info: "Info",
+                warning: "Avertissement",
+            }
+        }
+    };
+
+    const labsData = {
+        "sec0": {
+            section: {
+                en: "Section 0: Lab Environment Setup",
+                fr: "Section 0 : Mise en Place de l'Environnement"
+            },
+            labs: [
+                {
+                    id: 'lab0-1',
+                    title: { en: '0.1 Set up your Lab Environment', fr: '0.1 Configurer votre Environnement de Laboratoire' },
+                    overview: {
+                        en: `In this section, we prepare our lab environment. We have multiple controllers pre-installed on a complete SDN_ENSTTIC VM (including Floodlight, Ryu, ODL, ONOS, and Mininet). You will download and import this image file using a desktop virtualization application like VirtualBox or VMware.`,
+                        fr: `Dans cette section, nous préparons notre environnement de laboratoire. Nous disposons de plusieurs contrôleurs pré-installés sur une VM complète SDN_ENSTTIC (incluant Floodlight, Ryu, ODL, ONOS et Mininet). Vous téléchargerez et importerez ce fichier image à l'aide d'une application de virtualisation de bureau comme VirtualBox ou VMware.`
+                    },
+                    diagram: `graph TD; subgraph "LAB Host <br> 192.168.1.100"; VBox(VirtualBox/VMware); end; VBox --> MininetVM("Mininet VM <br> 192.168.1.51"); VBox --> HPeVM("HPE Controller VM <br> 192.168.1.50");`,
+                    steps: [
+                        { en: "<strong>Hardware & Software Requirements:</strong> Intel i5 CPU, 4GB RAM, 6GB HDD. You will need a desktop virtualization application like VMware Player or VirtualBox.", fr: "<strong>Prérequis Matériels et Logiciels :</strong> CPU Intel i5, 4Go de RAM, 6Go de HDD. Vous aurez besoin d'une application de virtualisation de bureau comme VMware Player ou VirtualBox." },
+                        { en: "<strong>Download & Import:</strong> Download the provided SDN_ENSTTIC VM image (as an OVA file). Import the OVA file into your virtualization software (e.g., VirtualBox via `File > Import Appliance`).", fr: "<strong>Téléchargement & Importation :</strong> Téléchargez l'image VM SDN_ENSTTIC fournie (en tant que fichier OVA). Importez le fichier OVA dans votre logiciel de virtualisation (par ex., VirtualBox via `Fichier > Importer un appareil virtuel`)." },
+                        { en: "<strong>Configure VM Network Adapters:</strong> For both the Mininet and HPE VMs, configure two network adapters. Adapter 1 should be 'Bridged' (for internet access). Adapter 2 should be 'Host-only' (for communication between VMs).", fr: "<strong>Configurer les Adaptateurs Réseau de la VM :</strong> Pour les VM Mininet et HPE, configurez deux adaptateurs réseau. L'adaptateur 1 doit être en mode 'Accès par pont' (pour l'accès à Internet). L'adaptateur 2 doit être en mode 'Réseau privé hôte' (pour la communication entre les VM)." },
+                        { en: "<strong>Set Static IPs:</strong> To ensure consistent communication, assign static IP addresses to both virtual machines on the host-only network.", fr: "<strong>Définir les IP Statiques :</strong> Pour assurer une communication cohérente, attribuez des adresses IP statiques aux deux machines virtuelles sur le réseau privé hôte." },
+                    ],
+                    implementation: [
+                        { en: "Configure the static IP for the Mininet VM. Access it (user: code>mininet</code>, pass: <code>mininet</code>) and edit <code>/etc/network/interfaces</code>:", fr: "Configurez l'IP statique pour la VM Mininet. Accédez-y (user: <code>mininet</code>, pass: <code>mininet</code>) et modifiez <code>/etc/network/interfaces</code> :", code: `sudo nano /etc/network/interfaces\n\n# Add these lines for the host-only adapter (e.g., eth1)\nauto eth1\niface eth1 inet static\n    address 192.168.1.51\n    netmask 255.255.255.0`, lang: 'bash' },
+                        { en: "Configure the static IP for the HPE Controller VM. Access it (user: <code>sdn</code>, pass: <code>skyline</code>) and perform a similar edit:", fr: "Configurez l'IP statique pour la VM du contrôleur HPE. Accédez-y (user: <code>sdn</code>, pass: <code>skyline</code>) et effectuez une modification similaire :", code: `sudo nano /etc/network/interfaces\n\n# Add these lines for the host-only adapter\nauto eth1\niface eth1 inet static\n    address 192.168.1.50\n    netmask 255.255.255.0`, lang: 'bash' },
+                        { en: "After saving the changes, reboot both VMs with <code>sudo reboot</code>.", fr: "Après avoir enregistré les modifications, redémarrez les deux VM avec <code>sudo reboot</code>."}
+                    ],
+                    testing: [
+                        { en: "From the Mininet VM, start a topology connected to the remote HPE controller:", fr: "Depuis la VM Mininet, démarrez une topologie connectée au contrôleur HPE distant :", code: `sudo mn --controller=remote,ip=192.168.1.50 --switch ovsk,protocols=OpenFlow13`, lang: 'bash' },
+                        { en: "Test connectivity. If successful, the controller will discover the nodes.", fr: "Testez la connectivité. En cas de succès, le contrôleur découvrira les nœuds.", code: `mininet> pingall`, lang: 'bash' },
+                        { en: "Verify the connection status from the Mininet VM's command line:", fr: "Vérifiez l'état de la connexion depuis la ligne de commande de la VM Mininet :", code: `sudo ovs-vsctl show`, lang: 'bash' }
+                    ],
+                    troubleshooting: [
+                        { en: "If the VMs cannot ping each other, check the 'Host Network Manager' settings in VirtualBox (`File > Host Network Manager`) to ensure the Host-only adapter's IP is on the same subnet (e.g., 192.168.1.1).", fr: "Si les VM ne peuvent pas se pinger entre elles, vérifiez les paramètres du 'Gestionnaire de réseau hôte' dans VirtualBox (`Fichier > Gestionnaire de réseau hôte`) pour vous assurer que l'IP de l'adaptateur privé hôte est sur le même sous-réseau (par ex., 192.168.1.1)." }
+                    ]
+                }
+            ]
+        },
+        "sec1": {
+            section: { en: "Section 1: Introduction to SDN Tools", fr: "Section 1 : Introduction aux Outils SDN" },
+            labs: [
+                {
+                    id: 'lab1-1',
+                    title: { en: '1.1 About Mininet', fr: '1.1 À Propos de Mininet' },
+                    overview: {
+                        en: `Mininet is a network emulator that provides an effective network test bed environment to work with virtual hosts, switches, controllers, and links. Key features include scalability up to hundreds of nodes, suitability for research and development (code can be moved to real hardware with minimal changes), a comprehensive Python API, and support for custom topologies. It is an inexpensive and easily reconfigurable alternative to hardware-based testbeds.`,
+                        fr: `Mininet est un émulateur de réseau qui fournit un environnement de banc d'essai réseau efficace pour travailler avec des hôtes, des commutateurs, des contrôleurs et des liens virtuels. Ses caractéristiques clés incluent la capacité de monter en charge jusqu'à des centaines de nœuds, son adéquation pour la recherche et le développement (le code peut être transféré sur du matériel réel avec des modifications minimes), une API Python complète et la prise en charge de topologies personnalisées. C'est une alternative peu coûteuse et facilement reconfigurable aux bancs d'essai matériels.`
+                    },
+                    diagram: ``,
+                    steps: [],
+                    implementation: [],
+                    testing: [],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab1-2',
+                    title: { en: '1.2 Mininet Commands', fr: '1.2 Commandes Mininet' },
+                    overview: {
+                        en: `This section covers the essential commands for interacting with the Mininet environment, from basic inspection to creating custom topologies.`,
+                        fr: `Cette section couvre les commandes essentielles pour interagir avec l'environnement Mininet, de l'inspection de base à la création de topologies personnalisées.`
+                    },
+                    diagram: ``,
+                    steps: [],
+                    implementation: [
+                        { en: "Start a minimal topology:", fr: "Démarrer une topologie minimale :", code: "sudo mn", lang: "bash" },
+                        { en: "Start a topology with a remote controller:", fr: "Démarrer une topologie avec un contrôleur distant :", code: "sudo mn --controller=remote,ip=[IP_ADDR],port=[PORT]", lang: "bash" },
+                        { en: "Change topology size and type:", fr: "Changer la taille et le type de la topologie :", code: `sudo mn --test pingall --topo single,3\nsudo mn --test pingall --topo linear,4\nsudo mn --test pingall --topo tree,depth=2,fanout=2`, lang: "bash" }
+                    ],
+                    testing: [
+                        { en: "List nodes:", fr: "Lister les nœuds :", code: "mininet> nodes", lang: "bash" },
+                        { en: "Show links:", fr: "Afficher les liens :", code: "mininet> net", lang: "bash" },
+                        { en: "Dump node information:", fr: "Afficher les informations des nœuds :", code: "mininet> dump", lang: "bash" },
+                        { en: "Run a command on a host:", fr: "Exécuter une commande sur un hôte :", code: "mininet> h1 ifconfig", lang: "bash" },
+                        { en: "Test connectivity:", fr: "Tester la connectivité :", code: "mininet> pingall", lang: "bash" }
+                    ],
+                    troubleshooting: [
+                        { en: "Clean up previous Mininet instances:", fr: "Nettoyer les instances Mininet précédentes :", code: "sudo mn -c", lang: "bash" }
+                    ]
+                },
+                {
+                    id: 'lab1-3',
+                    title: { en: '1.3 Common Command Reference', fr: '1.3 Référence des Commandes Courantes' },
+                    overview: {
+                        en: `The table below lists the most commonly used Mininet commands, serving as a quick reference.`,
+                        fr: `Le tableau ci-dessous répertorie les commandes Mininet les plus couramment utilisées, servant de référence rapide.`
+                    },
+                    diagram: ``,
+                    steps: [
+                        {en: `
+                        <table>
+                            <thead>
+                                <tr><th>Command</th><th>Description</th><th>Example</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>sudo mn</code></td><td>Starts a basic Mininet topology.</td><td><code>sudo mn</code></td></tr>
+                                <tr><td><code>pingall</code></td><td>Tests connectivity between all hosts.</td><td><code>mininet> pingall</code></td></tr>
+                                <tr><td><code>iperf</code></td><td>Measures bandwidth between two hosts.</td><td><code>mininet> h1 iperf -s h2</code></td></tr>
+                                <tr><td><code>net</code></td><td>Displays the network topology.</td><td><code>mininet> net</code></td></tr>
+                                <tr><td><code>dump</code></td><td>Shows detailed information about all nodes.</td><td><code>mininet> dump</code></td></tr>
+                                <tr><td><code>xterm &lt;node&gt;</code></td><td>Opens an xterm terminal for a specific node.</td><td><code>mininet> xterm h1</code></td></tr>
+                                <tr><td><code>ovs-vsctl show</code></td><td>Displays detailed OVS information.</td><td><code>sh ovs-vsctl show</code></td></tr>
+                                <tr><td><code>ovs-ofctl dump-flows &lt;switch&gt;</code></td><td>Lists all flow entries in a switch's flow table.</td><td><code>sh ovs-ofctl dump-flows s1</code></td></tr>
+                                <tr><td><code>exit</code></td><td>Exits the Mininet CLI.</td><td><code>mininet> exit</code></td></tr>
+                            </tbody>
+                        </table>`,
+                        fr: `
+                        <table>
+                            <thead>
+                                <tr><th>Commande</th><th>Description</th><th>Exemple</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>sudo mn</code></td><td>Démarre une topologie Mininet de base.</td><td><code>sudo mn</code></td></tr>
+                                <tr><td><code>pingall</code></td><td>Teste la connectivité entre tous les hôtes.</td><td><code>mininet> pingall</code></td></tr>
+                                <tr><td><code>iperf</code></td><td>Mesure la bande passante entre deux hôtes.</td><td><code>mininet> h1 iperf -s h2</code></td></tr>
+                                <tr><td><code>net</code></td><td>Affiche la topologie du réseau.</td><td><code>mininet> net</code></td></tr>
+                                <tr><td><code>dump</code></td><td>Affiche des informations détaillées sur tous les nœuds.</td><td><code>mininet> dump</code></td></tr>
+                                <tr><td><code>xterm &lt;node&gt;</code></td><td>Ouvre un terminal xterm pour un nœud spécifique.</td><td><code>mininet> xterm h1</code></td></tr>
+                                <tr><td><code>ovs-vsctl show</code></td><td>Affiche des informations détaillées sur OVS.</td><td><code>sh ovs-vsctl show</code></td></tr>
+                                <tr><td><code>ovs-ofctl dump-flows &lt;switch&gt;</code></td><td>Liste toutes les entrées de flux dans la table de flux d'un switch.</td><td><code>sh ovs-ofctl dump-flows s1</code></td></tr>
+                                <tr><td><code>exit</code></td><td>Quitte le CLI de Mininet.</td><td><code>mininet> exit</code></td></tr>
+                            </tbody>
+                        </table>`
+                        }
+                    ],
+                    implementation: [],
+                    testing: [],
+                    troubleshooting: []
+                }
+            ]
+        },
+        "sec2": {
+            section: { en: "Section 2: The Controller & Data Plane Connection", fr: "Section 2 : Connexion Contrôleur & Plan de Données" },
+            labs: [
+                {
+                    id: 'lab2-1',
+                    title: { en: '2.1 About Ryu Controller', fr: '2.1 À propos du contrôleur Ryu' },
+                    overview: {
+                        en: `Ryu is an open-source SDN controller written in Python, known for its component-based architecture. This modularity allows for easy extension of its functionality through custom applications. <br><br> Key features include: <ul><li><strong>Multi-protocol support:</strong> Ryu supports various southbound APIs, including OpenFlow (multiple versions), NETCONF, and OF-Config, enabling it to manage diverse network devices.</li><li><strong>Python-based:</strong> Its implementation in Python makes it relatively easy to learn, develop for, and contribute to, fostering a large and active community.</li><li><strong>Extensibility:</strong> The component-based architecture allows developers to create and integrate custom applications to tailor Ryu's functionality to specific network needs.</li><li><strong>OpenFlow compatibility:</strong> Ryu supports multiple versions of the OpenFlow protocol, ensuring compatibility with a wide range of OpenFlow-enabled switches.</li></ul>`,
+                        fr: `Ryu est un contrôleur SDN open-source écrit en Python, connu pour son architecture à base de composants. Cette modularité permet une extension facile de ses fonctionnalités via des applications personnalisées. <br><br> Les caractéristiques clés incluent : <ul><li><strong>Prise en charge multi-protocoles :</strong> Ryu prend en charge diverses API southbound, y compris OpenFlow (plusieurs versions), NETCONF et OF-Config, ce qui lui permet de gérer divers périphériques réseau.</li><li><strong>Basé sur Python :</strong> Son implémentation en Python le rend relativement facile à apprendre, à développer et à contribuer, favorisant une communauté large et active.</li><li><strong>Extensibilité :</strong> L'architecture à base de composants permet aux développeurs de créer et d'intégrer des applications personnalisées pour adapter les fonctionnalités de Ryu à des besoins réseau spécifiques.</li><li><strong>Compatibilité OpenFlow :</strong> Ryu prend en charge plusieurs versions du protocole OpenFlow, assurant la compatibilité avec une large gamme de commutateurs compatibles OpenFlow.</li></ul>`
+                    },
+                    diagram: ``,
+                    steps: [],
+                    implementation: [],
+                    testing: [],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab2-2',
+                    title: { en: '2.2 Confirming the Testbed is Operational', fr: '2.2 Confirmation de l\'Opérationnalité du Banc d\'Essai' },
+                    overview: {
+                        en: `The Ryu controller is already installed on the SDN_ENSTTIC VM. This lab confirms that the testbed is fully operational by connecting a Mininet topology to a running Ryu application.`,
+                        fr: `Le contrôleur Ryu est déjà installé sur la VM SDN_ENSTTIC. Ce TP confirme que le banc d'essai est pleinement opérationnel en connectant une topologie Mininet à une application Ryu en cours d'exécution.`
+                    },
+                    diagram: `graph TD; C0(Ryu Controller) --> S1(OpenFlow Switch); S1 --> H1("h1 <br> 10.1.1.1"); S1 --> H2("h2 <br> 10.1.1.2"); S1 --> H3("h3 <br> 10.1.1.3"); S1 --> H4("h4 <br> 10.1.1.4");`,
+                    steps: [
+                        { en: "Open two terminals. One for the Ryu controller and one for Mininet.", fr: "Ouvrez deux terminaux. Un pour le contrôleur Ryu et un pour Mininet." },
+                        { en: "Run the Ryu manager for a simple switch application.", fr: "Exécutez le gestionnaire Ryu pour une application de commutateur simple." },
+                        { en: "Run the Mininet network and connect it to the Ryu controller on the loopback IP address.", fr: "Exécutez le réseau Mininet et connectez-le au contrôleur Ryu sur l'adresse IP de loopback." },
+                        { en: "Review the OVS configuration and flows to see the initial state.", fr: "Passez en revue la configuration et les flux OVS pour voir l'état initial." },
+                        { en: "Run `pingall` in Mininet and re-dump the flows to see the influence of the Ryu controller.", fr: "Exécutez `pingall` dans Mininet et ré-affichez les flux pour voir l'influence du contrôleur Ryu." },
+                    ],
+                    implementation: [
+                        { en: "Terminal 1: Start Ryu Controller", fr: "Terminal 1 : Démarrer le contrôleur Ryu", code: "ryu-manager ryu.app.simple_switch_13", lang: "bash" },
+                        { en: "Terminal 2: Start Mininet", fr: "Terminal 2 : Démarrer Mininet", code: "sudo mn --controller=remote,ip=127.0.0.1 --switch ovsk,protocols=OpenFlow13 --mac --ipbase=10.1.1.0/24 --topo single,4", lang: "bash" }
+                    ],
+                    testing: [
+                        { en: "Check OVS status:", fr: "Vérifier le statut OVS :", code: "sudo ovs-vsctl show", lang: "bash" },
+                        { en: "Dump flows from the switch before and after pinging:", fr: "Afficher les flux du switch avant et après le ping :", code: "sudo ovs-ofctl -O OpenFlow13 dump-flows s1", lang: "bash" }
+                    ],
+                    troubleshooting: []
+                },
+                 {
+                    id: 'lab2-3',
+                    title: { en: '2.3 Testing Ryu with Flow Manager', fr: '2.3 Tester Ryu avec Flow Manager' },
+                    overview: {
+                        en: `This lab introduces Flow Manager, a graphical user interface for the Ryu controller, and confirms that the entire testbed is operational by running a simple topology and inspecting the OpenFlow messages and flow rules.`,
+                        fr: `Ce TP présente Flow Manager, une interface utilisateur graphique pour le contrôleur Ryu, et confirme que l'ensemble du banc d'essai est opérationnel en exécutant une topologie simple et en inspectant les messages OpenFlow et les règles de flux.`
+                    },
+                    diagram: `graph TD; C(Ryu Controller); subgraph "Tree Topology (depth=2, fanout=2)"; S1 --- S2 & S3; end; subgraph "Hosts"; S2 --> H1("h1"); S2 --> H2("h2"); S3 --> H3("h3"); S3 --> H4("h4"); end; C -.-> S1;`,
+                    steps: [
+                        { en: "<strong>Running with Flow Manager:</strong> Use Flow Manager to get a graphical view of your network topology and the flow entries on each switch.", fr: "<strong>Exécution avec Flow Manager :</strong> Utilisez Flow Manager pour obtenir une vue graphique de votre topologie réseau et des entrées de flux sur chaque commutateur." },
+                        { en: "<strong>Confirming Operation:</strong> We will run Ryu and Mininet in separate terminals, then use `ovs-ofctl` to inspect the flow tables before and after generating traffic to see the controller's reactive rules in action.", fr: "<strong>Confirmation de l'Opérationnalité :</strong> Nous exécuterons Ryu et Mininet dans des terminaux séparés, puis utiliserons `ovs-ofctl` pour inspecter les tables de flux avant et après la génération de trafic pour voir les règles réactives du contrôleur en action." }
+                    ],
+                    implementation: [
+                        {en: "The command below is more powerful than a basic `ryu-manager` call because it loads multiple applications that work together: <ul><li><code>--observe-links</code>: This flag activates Ryu's topology discovery module, which is necessary for Flow Manager to map the network.</li><li><code>~/flowmanager/flowmanager.py</code>: This is the Flow Manager application itself, providing the web GUI.</li><li><code>ryu.app.simple_switch_13</code>: This is the core L2 switching logic. Flow Manager will visualize the flows created by this application.</li></ul>", fr: "La commande ci-dessous est plus puissante qu'un simple appel `ryu-manager` car elle charge plusieurs applications qui fonctionnent ensemble :<ul><li><code>--observe-links</code>: Cet indicateur active le module de découverte de topologie de Ryu, nécessaire pour que Flow Manager puisse cartographier le réseau.</li><li><code>~/flowmanager/flowmanager.py</code>: C'est l'application Flow Manager elle-même, qui fournit l'interface graphique web.</li><li><code>ryu.app.simple_switch_13</code>: C'est la logique de commutation L2 de base. Flow Manager visualisera les flux créés par cette application.</li></ul>"},
+                        { en: "To run Ryu with the Flow Manager GUI (ensure it's installed in `~/flowmanager`):", fr: "Pour exécuter Ryu avec l'interface graphique Flow Manager (assurez-vous qu'il est installé dans `~/flowmanager`) :", code: "ryu-manager --observe-links ~/flowmanager/flowmanager.py ryu.app.simple_switch_13", lang: "bash" },
+                        { en: "In a second terminal, connect a tree topology to the Ryu controller:", fr: "Dans un second terminal, connectez une topologie en arbre au contrôleur Ryu :", code: "sudo mn --topo tree,depth=2,fanout=2 --switch ovsk --controller=remote,ip=127.0.0.1,port=6653 --mac", lang: "bash" }
+                    ],
+                    testing: [
+                        { en: "After starting both, you can access the Flow Manager web interface (usually at http://127.0.0.1:8080) to see the topology.", fr: "Après avoir démarré les deux, vous pouvez accéder à l'interface web de Flow Manager (généralement à http://127.0.0.1:8080) pour voir la topologie." },
+                        { en: "In the Mininet CLI, generate traffic:", fr: "Dans le CLI de Mininet, générez du trafic :", code: "mininet> pingall", lang: "bash" },
+                        { en: "In a third terminal, dump the flows from a switch to see the reactive rules added by Ryu:", fr: "Dans un troisième terminal, affichez les flux d'un commutateur pour voir les règles réactives ajoutées par Ryu :", code: "sudo ovs-ofctl -O OpenFlow13 dump-flows s1", lang: "bash" }
+                    ],
+                    troubleshooting: [
+                        {en: "If Flow Manager doesn't show the topology, make sure you used the `--observe-links` flag when starting `ryu-manager`.", fr: "Si Flow Manager n'affiche pas la topologie, assurez-vous d'avoir utilisé l'indicateur `--observe-links` lors du démarrage de `ryu-manager`."}
+                    ]
+                },
+                {
+                    id: 'lab2-4',
+                    title: { en: '2.4 OpenFlow Connection Handshake', fr: '2.4 Handshake de Connexion OpenFlow' },
+                    overview: { en: `This lab uses Wireshark to inspect the initial handshake sequence between a Mininet switch and a local Ryu controller. This sequence establishes the OpenFlow channel and allows the controller to learn about the switch's capabilities.`, fr: `Ce TP utilise Wireshark pour inspecter la séquence de handshake initiale entre un commutateur Mininet et un contrôleur Ryu local. Cette séquence établit le canal OpenFlow et permet au contrôleur de connaître les capacités du commutateur.` },
+                    diagram: `sequenceDiagram; participant S1 as Switch; participant C as Ryu Controller; S1->>C: HELLO; C-->>S1: HELLO; C->>S1: FEATURES_REQUEST; S1-->>C: FEATURES_REPLY; C->>S1: SET_CONFIG; S1-->>C: SET_CONFIG_REPLY;`,
+                    steps: [
+                        {en: "Start Wireshark and begin capturing on the loopback interface (`lo`), as both Mininet and Ryu are running locally.", fr: "Démarrez Wireshark et commencez à capturer sur l'interface de loopback (`lo`), car Mininet and Ryu s'exécutent tous deux localement."},
+                        {en: "Start the Ryu controller in one terminal.", fr: "Démarrez le contrôleur Ryu dans un terminal."},
+                        {en: "Start a simple Mininet topology in another terminal.", fr: "Démarrez une topologie Mininet simple dans un autre terminal."},
+                        {en: "Stop the capture and inspect the packets in Wireshark.", fr: "Arrêtez la capture et inspectez les paquets dans Wireshark."}
+                    ],
+                    implementation: [
+                        {en: "Start Wireshark from the Mininet CLI or a new terminal:", fr: "Démarrez Wireshark depuis le CLI de Mininet ou un nouveau terminal :", code: "wireshark &", lang: "bash"},
+                        {en: "Start Ryu:", fr: "Démarrez Ryu :", code: "ryu-manager ryu.app.simple_switch_13", lang: "bash"},
+                        {en: "Start Mininet:", fr: "Démarrez Mininet :", code: "sudo mn --controller=remote,ip=127.0.0.1 --topo single,1", lang: "bash"}
+                    ],
+                    testing: [
+                        {en: "In Wireshark, apply the filter <code>openflow_v4</code>.", fr: "Dans Wireshark, appliquez le filtre <code>openflow_v4</code>."},
+                        {en: "Observe the key packets: HELLO (to negotiate version), FEATURES_REQUEST (controller asks about switch capabilities), and FEATURES_REPLY (switch responds with its datapath ID, buffer count, etc.).", fr: "Observez les paquets clés : HELLO (pour négocier la version), FEATURES_REQUEST (le contrôleur demande les capacités du switch), et FEATURES_REPLY (le switch répond avec son datapath ID, son nombre de tampons, etc.)."},
+                        {en: "<strong>PACKET_IN Messages:</strong> After the handshake, if you generate traffic (e.g., `pingall`), you will see these messages. A switch sends a `PACKET_IN` to the controller when it receives a packet that doesn't match any entry in its flow table. It's asking the controller for instructions.", fr: "<strong>Messages PACKET_IN :</strong> Après le handshake, si vous générez du trafic (par ex., `pingall`), vous verrez ces messages. Un commutateur envoie un `PACKET_IN` au contrôleur lorsqu'il reçoit un paquet qui ne correspond à aucune entrée de sa table de flux. Il demande des instructions au contrôleur."},
+                        {en: "<strong>PACKET_OUT Messages:</strong> In response to a `PACKET_IN`, the controller sends a `PACKET_OUT` message. This tells the switch exactly what to do with the packet it just received, such as forwarding it to a specific port or flooding it.", fr: "<strong>Messages PACKET_OUT :</strong> En réponse à un `PACKET_IN`, le contrôleur envoie un message `PACKET_OUT`. Celui-ci indique exactement au commutateur quoi faire avec le paquet qu'il vient de recevoir, comme le transférer vers un port spécifique ou l'inonder."},
+                        {en: "<strong>FLOW_MOD Messages:</strong> Along with a `PACKET_OUT`, the controller will usually send a `FLOW_MOD` (Flow Modification) message. This instructs the switch to install a new flow rule so that future packets of the same type can be processed directly by the switch without needing to contact the controller again.", fr: "<strong>Messages FLOW_MOD :</strong> En plus d'un `PACKET_OUT`, le contrôleur enverra généralement un message `FLOW_MOD` (Modification de Flux). Celui-ci ordonne au commutateur d'installer une nouvelle règle de flux afin que les futurs paquets du même type puissent être traités directement par le commutateur sans avoir à contacter à nouveau le contrôleur."}
+                    ],
+                    troubleshooting: []
+                }
+            ]
+        },
+        "sec3": {
+            section: { en: "Section 3: Open vSwitch Deep Dive", fr: "Section 3 : Plongée dans Open vSwitch" },
+            labs: [
+                {
+                    id: 'lab3-1',
+                    title: { en: '3.1 Introduction to OvS Commands', fr: '3.1 Introduction aux commandes OvS' },
+                    overview: {
+                        en: `Before manipulating flows, it's essential to understand the basic commands for inspecting Open vSwitch. This lab covers <code>ovs-vsctl</code> for managing the switch configuration and <code>ovs-ofctl</code> for interacting with the OpenFlow protocol logic.`,
+                        fr: `Avant de manipuler les flux, il est essentiel de comprendre les commandes de base pour inspecter Open vSwitch. Ce TP couvre <code>ovs-vsctl</code> pour la gestion de la configuration du switch et <code>ovs-ofctl</code> pour interagir avec la logique du protocole OpenFlow.`
+                    },
+                    diagram: `graph TD; User -- "ovs-vsctl" --> OvS_DB(OvS Database); User -- "ovs-ofctl" --> OpenFlow(Flow Tables);`,
+                    steps: [
+                        {en: "Start a simple Mininet topology, preferably without a controller, so we can inspect its default state.", fr: "Démarrez une topologie Mininet simple, de préférence sans contrôleur, afin que nous puissions inspecter son état par défaut."},
+                        {en: "Use <code>ovs-vsctl show</code> to see the overall status of the OvS instance, including bridges, ports, and controller connections.", fr: "Utilisez <code>ovs-vsctl show</code> pour voir l'état général de l'instance OvS, y compris les ponts, les ports et les connexions au contrôleur."},
+                        {en: "Use <code>ovs-ofctl dump-ports</code> to list the OpenFlow port numbers for a specific bridge. These numbers are used in flow rules.", fr: "Utilisez <code>ovs-ofctl dump-ports</code> pour lister les numéros de port OpenFlow pour un pont spécifique. Ces numéros sont utilisés dans les règles de flux."},
+                        {en: "Use <code>ovs-ofctl dump-flows</code> to see the current set of flow rules on the switch.", fr: "Utilisez <code>ovs-ofctl dump-flows</code> pour voir l'ensemble actuel des règles de flux sur le switch."}
+                    ],
+                    implementation: [
+                        {en: "Start Mininet:", fr: "Démarrez Mininet :", code: "sudo mn --topo single,2 --controller=none", lang: "bash"},
+                        {en: "Show OvS status:", fr: "Afficher le statut d'OvS :", code: "mininet> sh ovs-vsctl show", lang: "bash"},
+                        {en: "Show OpenFlow port numbers for switch s1:", fr: "Afficher les numéros de port OpenFlow pour le switch s1 :", code: "mininet> sh ovs-ofctl dump-ports s1", lang: "bash"},
+                        {en: "Show flow table for switch s1:", fr: "Afficher la table de flux pour le switch s1 :", code: "mininet> sh ovs-ofctl dump-flows s1", lang: "bash"}
+                    ],
+                    testing: [],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab3-2',
+                    title: { en: '3.2 Manual Flow Installation (Layer 2)', fr: '3.2 Installation Manuelle de Flux (Couche 2)' },
+                    overview: {
+                        en: `This lab focuses on manually programming a switch to forward traffic based on Layer 2 (Ethernet) information. We will add flows that match source and destination MAC addresses to enable communication between two hosts without a controller.`,
+                        fr: `Ce TP se concentre sur la programmation manuelle d'un commutateur pour transférer du trafic en se basant sur des informations de Couche 2 (Ethernet). Nous ajouterons des flux qui correspondent aux adresses MAC source et destination pour permettre la communication entre deux hôtes sans contrôleur.`
+                    },
+                    diagram: `graph TD; S1; H1("h1 <br> 00:..:01"); H2("h2 <br> 00:..:02"); S1 -- "port 1" --> H1; S1 -- "port 2" --> H2;`,
+                    steps: [
+                        {en: "Start a topology with no controller and use the `--mac` option to make MAC addresses predictable.", fr: "Démarrez une topologie sans contrôleur et utilisez l'option `--mac` pour rendre les adresses MAC prévisibles."},
+                        {en: "Because there's no controller to handle ARP, add a rule to flood all ARP packets so hosts can discover each other's MAC addresses.", fr: "Comme il n'y a pas de contrôleur pour gérer l'ARP, ajoutez une règle pour inonder tous les paquets ARP afin que les hôtes puissent découvrir les adresses MAC des autres."},
+                        {en: "Add a flow rule to forward traffic from h1 to h2, matching on h1's MAC as the source and h2's as the destination, with an action to output to h2's port.", fr: "Ajoutez une règle de flux pour transférer le trafic de h1 à h2, en faisant correspondre la MAC de h1 comme source et celle de h2 comme destination, avec une action de sortie vers le port de h2."},
+                        {en: "Add a second, symmetrical rule for traffic from h2 to h1.", fr: "Ajoutez une seconde règle symétrique pour le trafic de h2 à h1."}
+                    ],
+                    implementation: [
+                        {en: "Start Mininet:", fr: "Démarrez Mininet :", code: "sudo mn --topo single,3 --controller=none --mac", lang: "bash"},
+                        {en: "Add ARP flood rule:", fr: "Ajoutez la règle d'inondation ARP :", code: `mininet> sh ovs-ofctl add-flow s1 "dl_type=0x0806,actions=flood"`, lang: "bash"},
+                        {en: "Add bidirectional L2 flows for h1 and h2:", fr: "Ajoutez des flux L2 bidirectionnels pour h1 et h2 :", code: `mininet> sh ovs-ofctl add-flow s1 "dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,actions=output:2"\nmininet> sh ovs-ofctl add-flow s1 "dl_src=00:00:00:00:00:02,dl_dst=00:00:00:00:00:01,actions=output:1"`, lang: "bash"},
+                    ],
+                    testing: [
+                        {en: "A ping between h1 and h2 should now succeed.", fr: "Un ping entre h1 et h2 devrait maintenant réussir."},
+                        {en: "A ping from h1 to h3 will fail, as no flow rules exist for this path.", fr: "Un ping de h1 à h3 échouera, car aucune règle de flux n'existe pour ce chemin."}
+                    ],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab3-3',
+                    title: { en: '3.3 Advanced Matching (Layer 3)', fr: '3.3 Correspondance Avancée (Couche 3)' },
+                    overview: {
+                        en: `Extend flow rules to match on Layer 3 information. By matching on IP addresses, the switch can make routing decisions without needing to know the MAC addresses, demonstrating a more powerful form of traffic control.`,
+                        fr: `Étendez les règles de flux pour correspondre aux informations de Couche 3. En faisant correspondre les adresses IP, le commutateur peut prendre des décisions de routage sans avoir besoin de connaître les adresses MAC, ce qui démontre une forme plus puissante de contrôle du trafic.`
+                    },
+                    diagram: `graph TD; S1; H1("h1 <br> 10.0.0.1"); H2("h2 <br> 10.0.0.2"); S1 -- "port 1" --> H1; S1 -- "port 2" --> H2;`,
+                    steps: [
+                        {en: "Clear all existing flows from the switch.", fr: "Effacez tous les flux existants du commutateur."},
+                        {en: "Add specific flow rules for ARP traffic, directing ARP replies for each host to the correct output port.", fr: "Ajoutez des règles de flux spécifiques pour le trafic ARP, dirigeant les réponses ARP pour chaque hôte vers le port de sortie correct."},
+                        {en: "Add a general rule that forwards any IP traffic within the 10.0.0.0/24 subnet using the `NORMAL` action, which tells the switch to behave like a traditional L2 switch for that traffic.", fr: "Ajoutez une règle générale qui transfère tout trafic IP au sein du sous-réseau 10.0.0.0/24 en utilisant l'action `NORMAL`, ce qui indique au commutateur de se comporter comme un commutateur L2 traditionnel pour ce trafic."}
+                    ],
+                    implementation: [
+                        {en: "Clear flows:", fr: "Effacer les flux :", code: "mininet> sh ovs-ofctl del-flows s1", lang: "bash"},
+                        {en: "Add IP-based flows:", fr: "Ajoutez des flux basés sur l'IP :", code: `mininet> sh ovs-ofctl add-flow s1 "arp,nw_dst=10.0.0.1,actions=output:1"\nmininet> sh ovs-ofctl add-flow s1 "arp,nw_dst=10.0.0.2,actions=output:2"\nmininet> sh ovs-ofctl add-flow s1 "ip,nw_dst=10.0.0.1,actions=output:1"\nmininet> sh ovs-ofctl add-flow s1 "ip,nw_dst=10.0.0.2,actions=output:2"`, lang: "bash"}
+                    ],
+                    testing: [
+                        {en: "Test connectivity between h1 and h2. It should succeed.", fr: "Testez la connectivité entre h1 et h2. Elle devrait réussir.", code: "mininet> h1 ping h2", lang: "bash"}
+                    ],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab3-4',
+                    title: { en: '3.4 Advanced Matching (Layer 4)', fr: '3.4 Correspondance Avancée (Couche 4)' },
+                    overview: {
+                        en: `Achieve application-aware traffic control by creating flow rules that match on Layer 4 (Transport) information, such as TCP/UDP protocols and port numbers. This allows the switch to differentiate between different types of services (e.g., web vs. video streaming).`,
+                        fr: `Obtenez un contrôle du trafic sensible aux applications en créant des règles de flux qui correspondent aux informations de Couche 4 (Transport), telles que les protocoles TCP/UDP et les numéros de port. Cela permet au commutateur de différencier les différents types de services (par ex., web vs streaming vidéo).`
+                    },
+                    diagram: `graph TD; S1; H1("h1"); H2("h2"); S1 --> H1; S1 --> H2;`,
+                    steps: [
+                        {en: "Start a server on one host and a client on another. For example, use `iperf` to generate TCP traffic on a specific port (default is 5001).", fr: "Démarrez un serveur sur un hôte et un client sur un autre. Par exemple, utilisez `iperf` pour générer du trafic TCP sur un port spécifique (la valeur par défaut est 5001)."},
+                        {en: "Add a flow rule that specifically drops TCP traffic destined for that port.", fr: "Ajoutez une règle de flux qui rejette spécifiquement le trafic TCP destiné à ce port."},
+                        {en: "Add a lower-priority rule that allows all other IP traffic.", fr: "Ajoutez une règle de priorité inférieure qui autorise tout autre trafic IP."}
+                    ],
+                    implementation: [
+                        {en: "Drop TCP traffic on port 5001:", fr: "Rejeter le trafic TCP sur le port 5001 :", code: `mininet> sh ovs-ofctl add-flow s1 "priority=200,tcp,tp_dst=5001,actions=drop"`, lang: "bash"},
+                        {en: "Allow all other IP traffic:", fr: "Autoriser tout autre trafic IP :", code: `mininet> sh ovs-ofctl add-flow s1 "priority=100,ip,actions=normal"`, lang: "bash"}
+                    ],
+                    testing: [
+                        {en: "Run an `iperf` test between h1 and h2. It should fail because the traffic is dropped.", fr: "Exécutez un test `iperf` entre h1 et h2. Il devrait échouer car le trafic est rejeté."},
+                        {en: "Run a `ping` between h1 and h2. It should succeed because ICMP traffic is not matched by the drop rule and falls through to the 'allow' rule.", fr: "Exécutez un `ping` entre h1 et h2. Il devrait réussir car le trafic ICMP n'est pas intercepté par la règle de rejet et passe à la règle 'allow'."}
+                    ],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab3-5',
+                    title: { en: '3.5 Flow Priorities and Timeouts', fr: '3.5 Priorités et Timeouts des Flux' },
+                    overview: {
+                        en: `This lab demonstrates how a switch resolves conflicting flow rules using priorities and how to manage the lifecycle of flow entries using timeouts. A higher priority number means the rule is checked first.`,
+                        fr: `Ce TP montre comment un commutateur résout les conflits de règles de flux en utilisant les priorités et comment gérer le cycle de vie des entrées de flux en utilisant des timeouts. Un numéro de priorité plus élevé signifie que la règle est vérifiée en premier.`
+                    },
+                    diagram: `graph TD; A[Flow Rule Installed] -- After 30s --> B(Rule Deleted); C[Flow Rule Installed] -- No traffic for 15s --> D(Rule Deleted);`,
+                    steps: [
+                        {en: "Add a high-priority flow rule with a `hard_timeout`. The rule will be active for the specified duration and then automatically removed.", fr: "Ajoutez une règle de flux de haute priorité avec un `hard_timeout`. La règle sera active pendant la durée spécifiée puis automatiquement supprimée."},
+                        {en: "Add another flow rule with an `idle_timeout`. Send traffic to keep it alive, then stop the traffic and observe that the rule is removed after the idle period.", fr: "Ajoutez une autre règle de flux avec un `idle_timeout`. Envoyez du trafic pour la maintenir en vie, puis arrêtez le trafic et observez que la règle est supprimée après la période d'inactivité."}
+                    ],
+                    implementation: [
+                        {en: "Add a high-priority drop rule with a 10-second hard timeout:", fr: "Ajoutez une règle de rejet de haute priorité avec un hard timeout de 10 secondes :", code: `mininet> sh ovs-ofctl -O OpenFlow13 add-flow s1 "priority=100,hard_timeout=10,actions=drop"`, lang: "bash"},
+                        {en: "Add a lower-priority allow rule:", fr: "Ajoutez une règle d'autorisation de priorité inférieure :", code: `mininet> sh ovs-ofctl -O OpenFlow13 add-flow s1 "priority=50,actions=normal"`, lang: "bash"}
+                    ],
+                    testing: [
+                        {en: "For the hard timeout, `pingall` will fail for 10 seconds because the 'drop' rule has higher priority. After 10 seconds, it will succeed as only the 'normal' rule remains.", fr: "Pour le hard timeout, `pingall` échouera pendant 10 secondes car la règle 'drop' a une priorité plus élevée. Après 10 secondes, il réussira car seule la règle 'normal' subsiste."},
+                    ],
+                    troubleshooting: []
+                },
+            ]
+        },
+        "sec4": {
+            section: { en: "Section 4: OpenFlow Fundamentals", fr: "Section 4 : Fondamentaux d'OpenFlow" },
+            labs: [
+                 {
+                    id: 'lab4-1',
+                    title: { en: '4.1 Flow Table Demo', fr: '4.1 Démo de la Table de Flux' },
+                    overview: { en: `This demo illustrates how to inspect the flow table of an OpenFlow switch. The content here is similar to what a controller would install. For a deeper dive into manual flow installation, see the labs in the <strong>Open vSwitch Deep Dive</strong> section.`, fr: `Cette démo illustre comment inspecter la table de flux d'un commutateur OpenFlow. Le contenu ici est similaire à ce qu'un contrôleur installerait. Pour une exploration plus approfondie de l'installation manuelle de flux, consultez les TPs de la section <strong>Plongée dans Open vSwitch</strong>.` },
+                    diagram: `graph TD; C(Controller) -- "manages" --> S1 & S2; S1 --- S2; S1 --> H1("h1 <br> 10.0.0.1"); S2 --> H2("h2 <br> 10.0.0.2");`,
+                    steps: [],
+                    implementation: [],
+                    testing: [],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab4-2',
+                    title: { en: '4.2 Flow Installation: Reactive vs. Proactive', fr: '4.2 Installation de Flux : Réactif vs Proactif' },
+                    overview: { en: `This lab demonstrates the two primary modes of flow installation in SDN. <strong>Reactive:</strong> The controller installs flow rules only after a new, unknown packet arrives at a switch. <strong>Proactive:</strong> Flow rules are pre-populated in the switch's flow table by the controller or an administrator. For a detailed breakdown of the messages involved in the reactive process (PACKET_IN, etc.), please refer to <strong>Lab 2.4: OpenFlow Connection Handshake</strong>. For hands-on proactive examples, see the <strong>Open vSwitch Deep Dive</strong> section.`, fr: `Ce TP démontre les deux modes principaux d'installation de flux en SDN. <strong>Réactif :</strong> Le contrôleur n'installe les règles de flux qu'après l'arrivée d'un nouveau paquet inconnu sur un commutateur. <strong>Proactif :</strong> Les règles de flux sont pré-chargées dans la table de flux du commutateur par le contrôleur ou un administrateur. Pour une description détaillée des messages impliqués dans le processus réactif (PACKET_IN, etc.), veuillez vous référer au <strong>TP 2.4 : Handshake de Connexion OpenFlow</strong>. Pour des exemples pratiques proactifs, consultez la section <strong>Plongée dans Open vSwitch</strong>.` },
+                    diagram: ``,
+                    steps: [],
+                    implementation: [],
+                    testing: [],
+                    troubleshooting: []
+                }
+            ]
+        },
+        "sec5": {
+            section: { en: "Section 5: Custom Network Topologies", fr: "Section 5 : Création de Topologies Personnalisées" },
+            labs: [
+                {
+                    id: 'lab5-1',
+                    title: { en: '5.1 Topology with MiniEdit', fr: '5.1 Topologie avec MiniEdit' },
+                    overview: {
+                        en: `Use the MiniEdit graphical user interface to visually create a simple network, run it, and export it as a reusable Python script.`,
+                        fr: `Utilisez l'interface graphique MiniEdit pour créer visuellement un réseau simple, l'exécuter et l'exporter en tant que script Python réutilisable.`
+                    },
+                    diagram: `graph TD; M(MiniEdit GUI) -- Export --> P(Python Script); P -- Run --> N(Mininet Network);`,
+                    steps: [
+                        { en: "Launch MiniEdit from the command line.", fr: "Lancez MiniEdit depuis la ligne de commande." },
+                        { en: "Build the Topology: Use the graphical tools to add hosts, switches, and a controller. Connect them using the link tool.", fr: "Construisez la topologie : Utilisez les outils graphiques pour ajouter des hôtes, des switches et un contrôleur. Connectez-les avec l'outil de liaison." },
+                        { en: "Run the topology directly from the GUI to test it.", fr: "Exécutez la topologie directement depuis l'interface graphique pour la tester." },
+                        { en: "Export the topology to a Python script via `File -> Export -> Level 2 Script`.", fr: "Exportez la topologie vers un script Python via `Fichier -> Exporter -> Script Niveau 2`." }
+                    ],
+                    implementation: [
+                        { en: "Find the path to `miniedit.py` in your Mininet examples folder and run it:", fr: "Trouvez le chemin vers `miniedit.py` dans votre dossier d'exemples Mininet et exécutez-le :", code: `sudo python /path/to/mininet/examples/miniedit.py`, lang: 'bash' }
+                    ],
+                    testing: [
+                        { en: "After running the topology, use the `pingall` command in the spawned Mininet CLI to verify connectivity.", fr: "Après avoir exécuté la topologie, utilisez la commande `pingall` dans le CLI Mininet pour vérifier la connectivité." }
+                    ],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab5-2',
+                    title: { en: '5.2 Script: myFirstTopo.py', fr: '5.2 Script : myFirstTopo.py' },
+                    overview: {
+                        en: `Write a Python script from scratch to build a custom topology with two switches and four hosts.`,
+                        fr: `Écrivez un script Python à partir de zéro pour construire une topologie personnalisée avec deux commutateurs et quatre hôtes.`
+                    },
+                    diagram: `graph TD; S1 --- S2; S1 --> H1("h1 <br> 10.0.0.1"); S1 --> H2("h2 <br> 10.0.0.2"); S2 --> H3("h3 <br> 10.0.0.3"); S2 --> H4("h4 <br> 10.0.0.4");`,
+                    steps: [
+                        { en: "Create a new Python file named `myFirstTopo.py`.", fr: "Créez un nouveau fichier Python nommé `myFirstTopo.py`." },
+                        { en: "Import the necessary classes from the Mininet library.", fr: "Importez les classes nécessaires de la bibliothèque Mininet." },
+                        { en: "Define a custom topology class that inherits from `mininet.topo.Topo`.", fr: "Définissez une classe de topologie personnalisée qui hérite de `mininet.topo.Topo`." },
+                        { en: "In the `__init__` method, add hosts, switches, and links to define your network structure.", fr: "Dans la méthode `__init__`, ajoutez des hôtes, des commutateurs et des liens pour définir la structure de votre réseau." },
+                    ],
+                    implementation: [
+                        { en: "Full script for `myFirstTopo.py`:", fr: "Script complet pour `myFirstTopo.py` :", code: `#!/usr/bin/python
+from mininet.topo import Topo
+from mininet.net import Mininet
+from mininet.util import dumpNodeConnections
+from mininet.log import setLogLevel
+
+class MyFirstTopo(Topo):
+    def __init__(self):
+        Topo.__init__(self)
+        h1 = self.addHost('h1')
+        h2 = self.addHost('h2')
+        h3 = self.addHost('h3')
+        h4 = self.addHost('h4')
+        leftSwitch = self.addSwitch('s1')
+        rightSwitch = self.addSwitch('s2')
+        self.addLink(h1, leftSwitch)
+        self.addLink(h2, leftSwitch)
+        self.addLink(leftSwitch, rightSwitch)
+        self.addLink(rightSwitch, h3)
+        self.addLink(rightSwitch, h4)
+
+def runExperiment():
+    topo = MyFirstTopo()
+    net = Mininet(topo)
+    net.start()
+    dumpNodeConnections(net.hosts)
+    net.pingAll()
+    net.stop()
+
+if __name__ == '__main__':
+    setLogLevel('info')
+    runExperiment()`, lang: 'python' }
+                    ],
+                    testing: [
+                        { en: "Run your custom topology script:", fr: "Exécutez votre script de topologie personnalisé :", code: `sudo python myFirstTopo.py`, lang: 'bash' }
+                    ],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab5-3',
+                    title: { en: '5.3 Python API Topology Creation', fr: '5.3 Création de Topologie via l\'API Python' },
+                    overview: {
+                        en: `The Mininet Python API allows for programmatic creation of complex and parameterized topologies. It is structured into three main levels: <ul><li><strong>Low-level API:</strong> Directly instantiate base classes like <code>Host</code> and <code>Switch</code>.</li><li><strong>Mid-level API:</strong> Use the main <code>Mininet</code> class methods like <code>addHost()</code> and <code>addSwitch()</code>.</li><li><strong>High-level API:</strong> Use the <code>Topo</code> class to create reusable, parameterized topology templates that can be easily shared and run from the command line. This lab focuses on the High-level API.</li></ul>`,
+                        fr: `L'API Python de Mininet permet la création programmatique de topologies complexes et paramétrées. Elle est structurée en trois niveaux principaux : <ul><li><strong>API de bas niveau :</strong> Instancier directement des classes de base comme <code>Host</code> et <code>Switch</code>.</li><li><strong>API de niveau intermédiaire :</strong> Utiliser les méthodes de la classe principale <code>Mininet</code> comme <code>addHost()</code> et <code>addSwitch()</code>.</li><li><strong>API de haut niveau :</strong> Utiliser la classe <code>Topo</code> pour créer des modèles de topologie réutilisables et paramétrés qui peuvent être facilement partagés et exécutés depuis la ligne de commande. Ce TP se concentre sur l'API de haut niveau.</li></ul>`
+                    },
+                    diagram: `graph TD; S1 --- S2; S1 --> H1("h1 <br> 10.0.0.1"); S1 --> H2("h2 <br> 10.0.0.2"); S2 --> H3("h3 <br> 10.0.0.3"); S2 --> H4("h4 <br> 10.0.0.4");`,
+                    steps: [
+                        {en: "Create a Python script that defines a class inheriting from Mininet's `Topo` class.", fr: "Créez un script Python qui définit une classe héritant de la classe `Topo` de Mininet."},
+                        {en: "Within the class, use methods like `self.addHost()` and `self.addSwitch()` to define the network nodes.", fr: "À l'intérieur de la classe, utilisez des méthodes comme `self.addHost()` et `self.addSwitch()` pour définir les nœuds du réseau."},
+                        {en: "Use `self.addLink()` to connect the nodes together.", fr: "Utilisez `self.addLink()` pour connecter les nœuds entre eux."}
+                    ],
+                    implementation: [
+                        {en: "This extended script not only defines the topology but also includes a main execution block to start the network, test connectivity, and then stop it.", fr: "Ce script étendu ne définit pas seulement la topologie, mais inclut également un bloc d'exécution principal pour démarrer le réseau, tester la connectivité, puis l'arrêter.", code: `#!/usr/bin/python
+from mininet.topo import Topo
+from mininet.net import Mininet
+from mininet.util import dumpNodeConnections
+from mininet.log import setLogLevel
+
+class MyFirstTopo(Topo):
+    "Simple topology example."
+    def __init__(self):
+        "Create custom topo."
+        # Initialize topology
+        Topo.__init__(self)
+        # Add hosts and switches
+        h1 = self.addHost('h1')
+        h2 = self.addHost('h2')
+        h3 = self.addHost('h3')
+        h4 = self.addHost('h4')
+        leftSwitch = self.addSwitch('s1')
+        rightSwitch = self.addSwitch('s2')
+        # Add links
+        self.addLink(h1, leftSwitch)
+        self.addLink(h2, leftSwitch)
+        self.addLink(leftSwitch, rightSwitch)
+        self.addLink(rightSwitch, h3)
+        self.addLink(rightSwitch, h4)
+
+def runExperiment():
+    "Create and test a simple experiment"
+    topo = MyFirstTopo()
+    net = Mininet(topo)
+    net.start()
+    print("Dumping host connections")
+    dumpNodeConnections(net.hosts)
+    print("Testing network connectivity")
+    net.pingAll()
+    net.stop()
+
+if __name__ == '__main__':
+    # Tell mininet to print useful information
+    setLogLevel('info')
+    runExperiment()`, lang: "python"}
+                    ],
+                    testing: [
+                        {en: "You can run this script directly using Python:", fr: "Vous pouvez exécuter ce script directement avec Python :", code: "sudo python your_script_name.py", lang: "bash"},
+                        {en: "Alternatively, you can load the topology into the Mininet CLI using the `--custom` flag:", fr: "Alternativement, vous pouvez charger la topologie dans le CLI de Mininet en utilisant l'indicateur `--custom` :", code: "sudo mn --custom your_script_name.py --topo myfirsttopo", lang: "bash"}
+                    ],
+                    troubleshooting: []
+                }
+            ]
+        },
+        "sec6": {
+            section: { en: "Section 6: Building Controller Applications", fr: "Section 6 : Création d'Applications de Contrôleur" },
+            labs: [
+                {
+                    id: 'lab6-1',
+                    title: { en: '6.1 L2 Switch (Reactive)', fr: '6.1 Commutateur L2 (Réactif)' },
+                    overview: { en: `Create a Ryu controller that implements reactive L2 forwarding logic (MAC learning). This lab builds upon the basic L2 forwarding logic introduced with Ryu's built-in <code>simple_switch_13</code> application (see Section 2). The controller programs flows via OpenFlow in response to incoming packets.`, fr: `Créez un contrôleur Ryu qui implémente une logique de transfert L2 réactive (apprentissage MAC). Ce TP s'appuie sur la logique de transfert L2 de base introduite avec l'application intégrée <code>simple_switch_13</code> de Ryu (voir Section 2). Le contrôleur programme les flux via OpenFlow en réponse aux paquets entrants.` },
+                    diagram: `graph TD; C(Ryu Controller); S1 --- S2; S1 --> H1("h1 <br> 10.0.0.1"); S1 --> H2("h2 <br> 10.0.0.2"); S2 --> H3("h3 <br> 10.0.0.3"); S2 --> H4("h4 <br> 10.0.0.4"); C -- "Packet_In / Flow_Mod" --> S1 & S2;`,
+                    steps: [
+                        { en: "A 'Table-Miss' rule with low priority is installed first. It sends any unrecognized packets to the controller.", fr: "Une règle 'Table-Miss' de faible priorité est d'abord installée. Elle envoie tout paquet non reconnu au contrôleur." },
+                        { en: "Upon receiving a Packet-In message, the controller learns the source MAC address and its corresponding input port.", fr: "À la réception d'un message Packet-In, le contrôleur apprend l'adresse MAC source et son port d'entrée correspondant." },
+                        { en: "If the destination MAC is known, the controller installs a new, high-priority Flow-Mod rule for direct forwarding in the future.", fr: "Si l'adresse MAC de destination est connue, le contrôleur installe une nouvelle règle Flow-Mod de haute priorité pour un transfert direct à l'avenir." },
+                        { en: "The controller sends a Packet-Out message to forward the original packet.", fr: "Le contrôleur envoie un message Packet-Out pour transférer le paquet original." }
+                    ],
+                    implementation: [
+                        { en: "Full script for `switch_l2.py`:", fr: "Script complet pour `switch_l2.py` :", code: `from ryu.base import app_manager
+from ryu.controller import ofp_event
+from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, set_ev_cls
+from ryu.ofproto import ofproto_v1_3
+from ryu.lib.packet import packet, ethernet
+
+class SimpleSwitchL2(app_manager.RyuApp):
+    OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
+
+    def __init__(self, *args, **kwargs):
+        super(SimpleSwitchL2, self).__init__(*args, **kwargs)
+        self.mac_to_port = {}
+
+    @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
+    def switch_features_handler(self, ev):
+        datapath = ev.msg.datapath
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+        match = parser.OFPMatch()
+        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
+        self.add_flow(datapath, 0, match, actions)
+
+    def add_flow(self, datapath, priority, match, actions):
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+        inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
+        mod = parser.OFPFlowMod(datapath=datapath, priority=priority, match=match, instructions=inst)
+        datapath.send_msg(mod)
+
+    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
+    def _packet_in_handler(self, ev):
+        msg = ev.msg
+        datapath = msg.datapath
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+        dpid = datapath.id
+        self.mac_to_port.setdefault(dpid, {})
+        pkt = packet.Packet(msg.data)
+        eth = pkt.get_protocols(ethernet.ethernet)[0]
+        dst = eth.dst
+        src = eth.src
+        in_port = msg.match['in_port']
+        self.mac_to_port[dpid][src] = in_port
+        if dst in self.mac_to_port[dpid]:
+            out_port = self.mac_to_port[dpid][dst]
+        else:
+            out_port = ofproto.OFPP_FLOOD
+        actions = [parser.OFPActionOutput(out_port)]
+        if out_port != ofproto.OFPP_FLOOD:
+            match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
+            self.add_flow(datapath, 1, match, actions)
+        data = None
+        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
+            data = msg.data
+        out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id, in_port=in_port, actions=actions, data=data)
+        datapath.send_msg(out)`, lang: 'python' }
+                    ],
+                    testing: [
+                        { en: "Run the controller and a suitable topology script. A `pingall` should succeed.", fr: "Exécutez le contrôleur et un script de topologie approprié. Un `pingall` devrait réussir."}
+                    ],
+                    troubleshooting: []
+                }
+            ]
+        },
+        "sec7": {
+            section: { en: "Section 7: Advanced Event Demos & Mini-Projects", fr: "Section 7: Démos d'Événements Avancés & Mini-Projets" },
+            labs: [
+                {
+                    id: 'lab7-1',
+                    title: { en: '7.1 Proactive Traffic Engineering', fr: '7.1 Ingénierie de Trafic Proactive' },
+                    overview: {
+                        en: `This scenario demonstrates proactive traffic engineering by pre-configuring flow rules to control traffic paths based on protocol type (e.g., dropping HTTP) and time-based rules. Since the rules are installed upfront, no "Packet-IN" messages are needed for the switch to make forwarding decisions.`,
+                        fr: `Ce scénario démontre l'ingénierie de trafic proactive en pré-configurant des règles de flux pour contrôler les chemins de trafic en fonction du type de protocole (par ex., rejeter HTTP) et de règles basées sur le temps. Comme les règles sont installées à l'avance, aucun message "Packet-IN" n'est nécessaire pour que le commutateur prenne des décisions de transfert.`
+                    },
+                    diagram: `graph TD;
+                        subgraph "Controller (Proactive Setup)";
+                            direction LR;
+                            C((Controller));
+                        end;
+                        subgraph "Data Plane";
+                            S1 --- S2 & S3;
+                            S2 --- S4 & S5;
+                            S3 --- S6 & S7;
+                            S1 --> H1("h1");
+                            S4 --> H2("h2");
+                            S6 --> H3("h3");
+                        end;
+                        C -- "Installs Rules" --> S1 & S2 & S3 & S4 & S5 & S6 & S7;
+                    `,
+                    steps: [
+                        {en: "Create a custom tree topology with multiple switches and hosts.", fr: "Créez une topologie en arbre personnalisée avec plusieurs commutateurs et hôtes."},
+                        {en: "Clear any pre-existing flows from all switches to ensure a clean slate.", fr: "Effacez tous les flux préexistants de tous les commutateurs pour garantir un état de départ propre."},
+                        {en: "Proactively install flow rules to create specific policies: one to forward general IPv4 traffic, one to explicitly drop HTTP traffic, and a set of rules to create a time-based path.", fr: "Installez proactivement des règles de flux pour créer des politiques spécifiques : une pour transférer le trafic IPv4 général, une pour rejeter explicitement le trafic HTTP, et un ensemble de règles pour créer un chemin basé sur le temps."}
+                    ],
+                    implementation: [
+                        {en: "Start Mininet with a tree topology:", fr: "Démarrez Mininet avec une topologie en arbre :", code: "sudo mn --controller=remote,ip=192.168.1.50 --topo tree,depth=3,fanout=2 --switch=ovsk,protocols=OpenFlow13 --mac", lang: "bash"},
+                        {en: "Clear existing flows from the switches (example for s1, repeat for all):", fr: "Effacez les flux existants des commutateurs (exemple pour s1, répétez pour tous) :", code: "mininet> sh ovs-ofctl -O OpenFlow13 del-flows s1", lang: "bash"},
+                        {en: "Install rule to forward IPv4 packets towards h3 via port 2:", fr: "Installez une règle pour transférer les paquets IPv4 vers h3 via le port 2 :", code: `mininet> sh ovs-ofctl -O OpenFlow13 add-flow s1 "priority=100,ip,nw_dst=10.0.0.3,actions=output:2"`, lang: "bash"},
+                        {en: "Install rule to drop HTTP (port 80) packets:", fr: "Installez une règle pour rejeter les paquets HTTP (port 80) :", code: `mininet> sh ovs-ofctl -O OpenFlow13 add-flow s1 "priority=200,ip,nw_proto=6,tp_dst=80,actions=drop"`, lang: "bash"},
+                    ],
+                    testing: [
+                        {en: "Test that general IP traffic is forwarded:", fr: "Testez que le trafic IP général est transféré :", code: "mininet> h1 ping h3", lang: "bash"},
+                        {en: "Test that HTTP traffic is dropped:", fr: "Testez que le trafic HTTP est rejeté :", code: "mininet> h1 wget h2", lang: "bash"},
+                        {en: "Verify the flow tables to see your proactive rules:", fr: "Vérifiez les tables de flux pour voir vos règles proactives :", code: "mininet> sh ovs-ofctl -O OpenFlow13 dump-flows s1", lang: "bash"}
+                    ],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab7-2',
+                    title: { en: '7.2 Project: Load Balancer', fr: '7.2 Projet : Répartiteur de Charge' },
+                    overview: { en: `Implement a proactive Load Balancer to distribute traffic from two hosts to a server over two distinct paths.`, fr: `Implémentez un répartiteur de charge proactif pour distribuer le trafic de deux hôtes vers un serveur via deux chemins distincts.` },
+                    diagram: `graph TD; S1 --> S2 & S3; S2 --> S4; S3 --> S4; subgraph Hosts; H1("h1 <br> 10.0.0.1"); H2("h2 <br> 10.0.0.2"); end; subgraph Server; Serv("Server <br> 10.0.0.3"); end; S1 --> H1; S1 --> H2; S4 --> Serv;`,
+                    steps: [
+                        { en: "Create the specified topology with multiple paths between the source hosts and the destination server.", fr: "Créez la topologie spécifiée avec plusieurs chemins entre les hôtes sources et le serveur de destination." },
+                        { en: "Manually install proactive flow rules on the switches to direct traffic from h1 down Path 1 and traffic from h2 down Path 2.", fr: "Installez manuellement des règles de flux proactives sur les commutateurs pour diriger le trafic de h1 via le chemin 1 et le trafic de h2 via le chemin 2." }
+                    ],
+                    implementation: [
+                        { en: "Use `ovs-ofctl add-flow` to install rules on s1 that match on source IP and forward to different output ports.", fr: "Utilisez `ovs-ofctl add-flow` pour installer des règles sur s1 qui correspondent à l'IP source et transfèrent vers différents ports de sortie.", code: `sh ovs-ofctl add-flow s1 priority=10,ip,nw_src=10.0.0.1,nw_dst=10.0.0.3,actions=output:3
+sh ovs-ofctl add-flow s1 priority=10,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3,actions=output:4`, lang: 'bash' }
+                    ],
+                    testing: [
+                        { en: "Use `tcpdump` on the intermediate switches (s2 and s3) to verify that traffic is being split as expected.", fr: "Utilisez `tcpdump` sur les commutateurs intermédiaires (s2 et s3) pour vérifier que le trafic est réparti comme prévu." }
+                    ],
+                    troubleshooting: []
+                },
+                {
+                    id: 'lab7-3',
+                    title: { en: '7.3 Project: Firewall', fr: '7.3 Projet : Pare-feu' },
+                    overview: { en: `Implement a basic SDN Firewall using proactive flow rules. The controller is programmed to allow only essential and specified traffic while dropping all other IPv4 traffic.`, fr: `Implémentez un pare-feu SDN de base en utilisant des règles de flux proactives. Le contrôleur est programmé pour autoriser uniquement le trafic essentiel et spécifié, tout en rejetant tout autre trafic IPv4.` },
+                    diagram: `graph TD; S1 --> S2; S2 --> Server("Server <br> 10.0.0.3"); S1 --> H1("h1 <br> 10.0.0.1"); S1 --> H2("h2 <br> 10.0.0.2");`,
+                    steps: [
+                        { en: "Define a strict security policy with priorities: Allow ARP, then allow specific ICMP/TCP flows, and finally, drop all other IP traffic with a low-priority rule.", fr: "Définissez une politique de sécurité stricte avec des priorités : Autorisez ARP, puis autorisez des flux ICMP/TCP spécifiques, et enfin, rejetez tout autre trafic IP avec une règle de faible priorité." }
+                    ],
+                    implementation: [
+                        { en: "Install high-priority rules for allowed traffic (ARP, ICMP between H1/H2, TCP to Server).", fr: "Installez des règles de haute priorité pour le trafic autorisé (ARP, ICMP entre H1/H2, TCP vers le serveur)." },
+                        { en: "Install a low-priority 'drop' rule for all other IP traffic to act as the default policy.", fr: "Installez une règle 'drop' de faible priorité pour tout autre trafic IP pour servir de politique par défaut.", code: `sh ovs-ofctl add-flow s1 priority=1,ip,actions=drop`, lang: 'bash' }
+                    ],
+                    testing: [
+                        { en: "Verify that `h1 ping h2` works, but `h1 ping Server` fails.", fr: "Vérifiez que `h1 ping h2` fonctionne, mais que `h1 ping Server` échoue." },
+                        { en: "Verify that `h1 iperf Server` works (TCP), but other traffic types are blocked.", fr: "Vérifiez que `h1 iperf Server` (TCP) fonctionne, mais que d'autres types de trafic sont bloqués." }
+                    ],
+                    troubleshooting: []
+                }
+            ]
+        }
+    };
+
+
+    // --- APP.JS ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const state = {
+            currentLanguage: 'en',
+            currentSectionId: null,
+            currentLabIndex: -1,
+            labStatuses: {} // { 'lab1-1': 'complete', 'lab1-2': 'in_progress' }
+        };
+
+        // --- DOM Element Cache ---
+        const elements = {
+            mainMenu: document.getElementById('main-menu'),
+            mainMenuGrid: document.getElementById('main-menu-grid'),
+            labViewer: document.getElementById('lab-viewer'),
+            backToMenuBtn: document.getElementById('back-to-menu'),
+            labViewerTitle: document.getElementById('lab-viewer-title'),
+            labTitle: document.getElementById('lab-title'),
+            tabsContainer: document.getElementById('tabs-container'),
+            tabContent: document.getElementById('tab-content'),
+            progressBar: document.getElementById('progress-bar'),
+            mainContent: document.getElementById('main-content'),
+            languageSwitcher: document.getElementById('language-switcher'),
+            themeToggles: [document.getElementById('theme-mode-toggle-main'), document.getElementById('theme-mode-toggle-viewer')],
+            themeIcons: [document.getElementById('theme-icon-main'), document.getElementById('theme-icon-viewer')],
+            prevLabBtn: document.getElementById('prev-lab-btn'),
+            nextLabBtn: document.getElementById('next-lab-btn'),
+            modal: document.getElementById('ai-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            modalContent: document.getElementById('modal-content'),
+            closeModalBtn: document.getElementById('close-modal-btn'),
+            explainBtn: document.getElementById('explain-btn'),
+            zoomModal: document.getElementById('zoom-modal'),
+            zoomModalContent: document.getElementById('zoom-modal-content'),
+            closeZoomModalBtn: document.getElementById('close-zoom-modal-btn'),
+        };
+
+        // --- Utility Functions ---
+        const getTranslation = (key) => {
+            const keys = key.split('.');
+            let result = content[state.currentLanguage];
+            for (const k of keys) {
+                result = result[k];
+                if (!result) return key;
+            }
+            return result || key;
+        };
+        
+        const getMermaidThemeConfig = () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            const computedStyles = getComputedStyle(document.documentElement);
+
+            return {
+                theme: 'base',
+                themeVariables: {
+                    primaryColor: isDark ? computedStyles.getPropertyValue('--bg-secondary').trim() : '#eff6ff',
+                    primaryTextColor: computedStyles.getPropertyValue('--text-headings').trim(),
+                    primaryBorderColor: computedStyles.getPropertyValue('--border-accent').trim(),
+                    lineColor: computedStyles.getPropertyValue('--text-secondary').trim(),
+                    textColor: computedStyles.getPropertyValue('--text-primary').trim(),
+                    nodeBorder: computedStyles.getPropertyValue('--border-accent').trim(),
+                },
+                startOnLoad: false
+            };
+        };
+
+        const saveData = () => {
+            localStorage.setItem('sdnLabState', JSON.stringify(state));
+        };
+
+        const loadData = () => {
+            const savedState = localStorage.getItem('sdnLabState');
+            if (savedState) {
+                const parsedState = JSON.parse(savedState);
+                state.currentLanguage = parsedState.currentLanguage || 'en';
+                state.labStatuses = parsedState.labStatuses || {};
+            }
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateThemeIcons();
+        };
+
+        // --- Rendering Functions ---
+
+        function updateThemeIcons() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const sunIcon = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>`;
+            const moonIcon = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>`;
+            elements.themeIcons.forEach(icon => icon.innerHTML = isDark ? sunIcon : moonIcon);
+        }
+        
+        function renderDashboard() {
+            elements.mainMenuGrid.innerHTML = '';
+            elements.mainMenu.style.display = 'block';
+            elements.labViewer.style.display = 'none';
+
+            for (const sectionId in labsData) {
+                const section = labsData[sectionId];
+                const labsInSection = section.labs;
+                let completedCount = 0;
+                let inProgress = false;
+
+                labsInSection.forEach(lab => {
+                    const status = state.labStatuses[lab.id];
+                    if (status === 'complete') completedCount++;
+                    if (status === 'in_progress') inProgress = true;
+                });
+
+                let statusKey = 'not_started';
+                let statusColor = 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+                if (completedCount === labsInSection.length) {
+                    statusKey = 'complete';
+                    statusColor = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                } else if (completedCount > 0 || inProgress) {
+                    statusKey = 'in_progress';
+                    statusColor = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+                }
+
+                const card = document.createElement('div');
+                card.className = 'lab-card bg-secondary p-6 rounded-lg shadow-md hover:shadow-xl transition-all cursor-pointer border border-custom';
+                card.dataset.sectionId = sectionId;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h2 class="font-poppins text-xl font-bold mb-2 accent-color">${section.section[state.currentLanguage]}</h2>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColor}">${getTranslation(`statuses.${statusKey}`)}</span>
+                    </div>
+                    <ul class="text-sm text-secondary space-y-1 mt-4">
+                        ${labsInSection.map(lab => `<li>${lab.title[state.currentLanguage]}</li>`).join('')}
+                    </ul>
+                `;
+                card.addEventListener('click', () => {
+                    showLab(sectionId, 0);
+                });
+                elements.mainMenuGrid.appendChild(card);
+            }
+            translateUI();
+        }
+
+        function renderLabViewer() {
+            const section = labsData[state.currentSectionId];
+            const lab = section.labs[state.currentLabIndex];
+
+            elements.labViewerTitle.textContent = section.section[state.currentLanguage];
+            elements.labTitle.textContent = lab.title[state.currentLanguage];
+            
+            elements.tabsContainer.innerHTML = '';
+            let isFirstTab = true;
+            Object.keys(content.en.tabs).forEach((tabKey) => {
+                if(lab[tabKey] && (!Array.isArray(lab[tabKey]) || lab[tabKey].length > 0)) {
+                    const button = document.createElement('button');
+                    button.className = `tab-btn text-sm font-semibold p-3 border-b-2 border-transparent transition-colors`;
+                    if (isFirstTab) {
+                        button.classList.add('active');
+                        renderTabContent(lab, tabKey);
+                        isFirstTab = false;
+                    }
+                    button.textContent = getTranslation(`tabs.${tabKey}`);
+                    button.dataset.tab = tabKey;
+                    button.addEventListener('click', (e) => {
+                        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        renderTabContent(lab, tabKey);
+                    });
+                    elements.tabsContainer.appendChild(button);
+                }
+            });
+
+            updateNavButtons();
+            if (state.labStatuses[lab.id] !== 'complete') {
+                state.labStatuses[lab.id] = 'in_progress';
+            }
+            saveData();
+        }
+
+        function renderTabContent(lab, tabKey) {
+            let html = '';
+            const data = lab[tabKey];
+
+            switch(tabKey) {
+                case 'overview':
+                    html += `<p>${lab.overview[state.currentLanguage]}</p>`;
+                    if (lab.diagram) {
+                        const encodedDiagram = lab.diagram.replace(/"/g, '&quot;');
+                        html += `<div class="my-6 p-4 border border-custom rounded-lg overflow-x-auto flex justify-center diagram-container" data-mermaid-code="${encodedDiagram}"><div class="mermaid">${lab.diagram}</div></div>`;
+                    }
+                    break;
+                case 'steps':
+                    html += `<div class="space-y-6">`;
+                    data.forEach((step, index) => {
+                        html += `
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-full step-icon flex items-center justify-center font-bold mr-4">${index + 1}</div>
+                                <div class="pt-1">${step[state.currentLanguage]}</div>
+                            </div>`;
+                    });
+                    html += `</div>`;
+                    break;
+                case 'implementation':
+                case 'testing':
+                    data.forEach(item => {
+                        if(item[state.currentLanguage]) html += `<p>${item[state.currentLanguage]}</p>`;
+                        if(item.code) html += `<pre class="relative rounded-lg font-mono text-sm p-4" style="background-color: var(--code-bg); color: var(--code-text);"><code class="language-${item.lang}">${item.code}</code></pre>`;
+                    });
+                    break;
+                case 'troubleshooting':
+                     data.forEach(item => {
+                        html += `<div class="callout callout-warning p-4 my-4 rounded-r-lg"><strong>${getTranslation('callouts.warning')}:</strong> ${item[state.currentLanguage]}</div>`;
+                    });
+                    break;
+            }
+            
+            elements.tabContent.innerHTML = html;
+            elements.tabContent.querySelectorAll('pre code').forEach(codeBlock => {
+                const pre = codeBlock.parentElement;
+                const copyBtn = document.createElement('button');
+                copyBtn.textContent = getTranslation('copy');
+                copyBtn.className = 'copy-btn text-xs bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded';
+                pre.appendChild(copyBtn);
+            });
+
+            try {
+                mermaid.run({ nodes: elements.tabContent.querySelectorAll('.mermaid') });
+                addZoomFunctionality();
+            } catch (e) {
+                console.error("Mermaid error on tab render:", e);
+            }
+        }
+
+        function addZoomFunctionality() {
+            elements.tabContent.querySelectorAll('.diagram-container').forEach(container => {
+                container.addEventListener('click', () => {
+                    const mermaidCode = container.dataset.mermaidCode;
+                    if (mermaidCode) {
+                        const decodedCode = mermaidCode.replace(/&quot;/g, '"');
+                        elements.zoomModalContent.innerHTML = `<div class="mermaid">${decodedCode}</div>`;
+                        elements.zoomModal.style.display = 'flex';
+                        try {
+                            mermaid.run({ nodes: elements.zoomModalContent.querySelectorAll('.mermaid') });
+                        } catch (err) {
+                            console.error("Mermaid error in zoom modal:", err);
+                            elements.zoomModalContent.innerHTML = '<p>Error rendering diagram.</p>';
+                        }
+                    }
+                });
+            });
+        }
+
+        function updateNavButtons() {
+            const totalLabs = labsData[state.currentSectionId].labs.length;
+            elements.prevLabBtn.disabled = state.currentLabIndex === 0;
+            elements.nextLabBtn.disabled = state.currentLabIndex === totalLabs - 1;
+        }
+        
+        function translateUI() {
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                el.textContent = getTranslation(el.dataset.translate);
+            });
+            elements.languageSwitcher.textContent = state.currentLanguage === 'en' ? '🇬🇧 EN / 🇫🇷 FR' : '🇫🇷 FR / 🇬🇧 EN';
+        }
+
+
+        // --- Event Handlers ---
+        
+        function handleThemeToggle() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            updateThemeIcons();
+            
+            mermaid.initialize(getMermaidThemeConfig());
+            
+            try {
+                 mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+            } catch(e) {
+                console.error("Mermaid error on theme toggle:", e);
+            }
+        }
+
+        function showLab(sectionId, labIndex) {
+            state.currentSectionId = sectionId;
+            state.currentLabIndex = labIndex;
+            elements.mainMenu.style.display = 'none';
+            elements.labViewer.style.display = 'block';
+            elements.mainContent.scrollTop = 0;
+            renderLabViewer();
+        }
+        
+        function navigateLab(direction) {
+            const newIndex = state.currentLabIndex + direction;
+            const labs = labsData[state.currentSectionId].labs;
+            if (newIndex >= 0 && newIndex < labs.length) {
+                showLab(state.currentSectionId, newIndex);
+            }
+        }
+        
+        elements.backToMenuBtn.addEventListener('click', renderDashboard);
+        elements.themeToggles.forEach(btn => btn.addEventListener('click', handleThemeToggle));
+        elements.languageSwitcher.addEventListener('click', () => {
+            state.currentLanguage = state.currentLanguage === 'en' ? 'fr' : 'en';
+            if (elements.labViewer.style.display === 'block') {
+                renderLabViewer();
+            } else {
+                renderDashboard();
+            }
+            translateUI();
+            saveData();
+        });
+        
+        elements.prevLabBtn.addEventListener('click', () => navigateLab(-1));
+        elements.nextLabBtn.addEventListener('click', () => navigateLab(1));
+        
+        elements.mainContent.addEventListener('scroll', () => {
+            const { scrollTop, scrollHeight, clientHeight } = elements.mainContent;
+            if (scrollHeight > clientHeight) {
+                const scrollPercent = (scrollTop / (scrollHeight - clientHeight)) * 100;
+                elements.progressBar.style.width = `${scrollPercent}%`;
+                
+                if (scrollPercent > 98) {
+                     const lab = labsData[state.currentSectionId].labs[state.currentLabIndex];
+                     if (state.labStatuses[lab.id] !== 'complete') {
+                         state.labStatuses[lab.id] = 'complete';
+                         saveData();
+                     }
+                }
+            }
+        });
+        
+        elements.tabContent.addEventListener('click', (e) => {
+            if (e.target.classList.contains('copy-btn')) {
+                const pre = e.target.closest('pre');
+                const code = pre.querySelector('code').innerText;
+                navigator.clipboard.writeText(code).then(() => {
+                    e.target.textContent = getTranslation('copied');
+                    setTimeout(() => { e.target.textContent = getTranslation('copy'); }, 2000);
+                });
+            }
+        });
+
+        // Modal Logic
+        elements.explainBtn.addEventListener('click', () => {
+            const lab = labsData[state.currentSectionId].labs[state.currentLabIndex];
+            elements.modalTitle.textContent = `${getTranslation('modalTitle')}: ${lab.title[state.currentLanguage]}`;
+            elements.modalContent.innerHTML = lab.overview[state.currentLanguage]; 
+            elements.modal.style.display = 'flex';
+        });
+        
+        const closeModal = () => elements.modal.style.display = 'none';
+        elements.closeModalBtn.addEventListener('click', closeModal);
+        elements.modal.addEventListener('click', (e) => {
+            if (e.target === elements.modal) closeModal();
+        });
+
+        const closeZoomModal = () => elements.zoomModal.style.display = 'none';
+        elements.closeZoomModalBtn.addEventListener('click', closeZoomModal);
+        elements.zoomModal.addEventListener('click', (e) => {
+            if (e.target === elements.zoomModal) {
+                closeZoomModal();
+            }
+        });
+
+
+        // --- Initial Load ---
+        loadData();
+        mermaid.initialize(getMermaidThemeConfig());
+        renderDashboard();
+    });
+    </script>
+</body>
+</html>
+
