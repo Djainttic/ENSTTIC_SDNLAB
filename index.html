@@ -58,7 +58,8 @@
     <div id="main-menu" class="min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <header class="flex justify-between items-center mb-10">
-                <div>
+                <div class="flex items-center space-x-4">
+                    <img src="https://storage.googleapis.com/gemini-prod-us-east1-9d26/i/27b7078426a8c4b66c4331e80e9275f0" alt="ENSTIC Logo" class="h-10">
                     <h1 class="text-3xl font-bold font-poppins"><span class="accent-color">SDN</span> Lab Manual</h1>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -71,6 +72,10 @@
             <div id="main-menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Lab section cards will be populated here -->
             </div>
+             <footer class="text-center text-xs text-gray-500 mt-12">
+                <p>© 2025 National Higher School of Telecommunications and ICT (ENSTIC)</p>
+                <p>Dr. Djalal ZIANI-KERARTI | djalal.zianikerarti@ensttic.dz</p>
+            </footer>
         </div>
     </div>
 
@@ -618,23 +623,24 @@
                         howItWorks: {en: "In the <strong>Reactive</strong> scenario, the switch has no initial forwarding rule and must ask the controller what to do when the first packet arrives. In the <strong>Proactive</strong> scenario, we, acting as the administrator, will manually pre-install the rules, so the switch knows how to handle the traffic without consulting a controller.", fr: "Dans le scénario <strong>Réactif</strong>, le commutateur n'a pas de règle de transfert initiale et doit demander au contrôleur quoi faire lorsque le premier paquet arrive. Dans le scénario <strong>Proactif</strong>, nous, agissant en tant qu'administrateur, pré-installerons manuellement les règles, afin que le commutateur sache comment gérer le trafic sans consulter de contrôleur."},
                         learningOutcomes: {en: "You will be able to explain the difference between reactive and proactive flow installation and demonstrate both methods using Mininet and `ovs-ofctl`.", fr: "Vous serez capable d'expliquer la différence entre l'installation de flux réactive et proactive et de démontrer les deux méthodes en utilisant Mininet et `ovs-ofctl`."}
                     },
-                    diagram: `graph TD; R(Reactive); P(Proactive); R --> R1(Packet Arrives at Switch); R1 --> R2{Flow Match?}; R2 -- No --> R3(Send Packet-In to Controller); R3 --> R4(Controller sends Flow-Mod); R4 --> R5(Switch Installs Flow); R5 --> R6(Packet Forwarded); R2 -- Yes --> R6; P --> P1(Admin/Controller Installs Flows); P1 --> P2(Packet Arrives at Switch); P2 --> P3{Flow Match?}; P3 -- Yes --> P4(Packet Forwarded);`,
+                    diagram: `graph TD; R(Reactive); P(Proactive); R --> R1(Packet Arrives); R1 --> R2{Flow Match?}; R2 -- No --> R3(Packet-In to Controller); R3 --> R4(Controller sends Flow-Mod); R4 --> R5(Switch Installs Flow); R5 --> R6(Packet Forwarded); R2 -- Yes --> R6; P --> P1(Admin Installs Flows); P1 --> P2(Packet Arrives); P2 --> P3{Flow Match?}; P3 -- Yes --> P4(Packet Forwarded);`,
                     steps: [
                         {en: "This lab is in two parts. First, we will observe the reactive model using a Ryu controller.", fr: "Ce TP est en deux parties. D'abord, nous observerons le modèle réactif en utilisant un contrôleur Ryu."},
                         {en: "In the second part, we will disconnect the controller and manually install flows to demonstrate the proactive model.", fr: "Dans la deuxième partie, nous déconnecterons le contrôleur et installerons manuellement des flux pour démontrer le modèle proactif."}
                     ],
                     implementation: [
-                        {en: "For both parts of the lab, start the following simple topology. For Part 1, you will also need a Ryu controller running.", fr: "Pour les deux parties du TP, démarrez la topologie simple suivante. Pour la Partie 1, vous aurez également besoin d'un contrôleur Ryu en cours d'exécution."},
-                        {en: "Start the Ryu controller in a separate terminal (for Part 1 only):", fr: "Démarrez le contrôleur Ryu dans un terminal séparé (pour la Partie 1 uniquement) :", code: "ryu-manager ryu.app.simple_switch_13", lang: "bash"},
-                        {en: "Start Mininet for the demo:", fr: "Démarrez Mininet pour la démo :", code: "sudo mn --controller=remote,ip=127.0.0.1 --topo=single,2 --switch=ovsk,protocols=OpenFlow13 --mac", lang: "bash"}
+                        {en: "For both parts of the lab, start the following simple topology. For Part 1, you will also need a Ryu controller running with Flow Manager to visualize the network.", fr: "Pour les deux parties du TP, démarrez la topologie simple suivante. Pour la Partie 1, vous aurez besoin d'un contrôleur Ryu fonctionnant avec Flow Manager pour visualiser le réseau."},
+                        {en: "<strong>Part 1 Setup:</strong> Start the Ryu controller with Flow Manager in a separate terminal.", fr: "<strong>Configuration Partie 1 :</strong> Démarrez le contrôleur Ryu avec Flow Manager dans un terminal séparé.", code: "ryu-manager --observe-links ~/flowmanager/flowmanager.py ryu.app.simple_switch_13", lang: "bash"},
+                        {en: "<strong>Part 1 & 2 Setup:</strong> Start Mininet in another terminal.", fr: "<strong>Configuration Parties 1 & 2 :</strong> Démarrez Mininet dans un autre terminal.", code: "sudo mn --controller=remote,ip=127.0.0.1 --topo=single,2 --switch=ovsk,protocols=OpenFlow13 --mac", lang: "bash"}
                     ],
                     testing: [
                         {en: "<strong>Part 1: Reactive Demonstration</strong>", fr: "<strong>Partie 1 : Démonstration Réactive</strong>"},
-                        {en: "1. Clear any existing flows from the switch to ensure it is empty.", fr: "1. Effacez tous les flux existants du commutateur pour vous assurer qu'il est vide.", code: "mininet> sh ovs-ofctl -O OpenFlow13 del-flows s1", lang: "bash"},
-                        {en: "2. Try to ping from h1 to h2. The first ping may show a slight delay or packet loss as the switch contacts the controller.", fr: "2. Essayez de pinger de h1 à h2. Le premier ping peut montrer un léger retard ou une perte de paquet pendant que le commutateur contacte le contrôleur.", code: "mininet> h1 ping h2 -c 1", lang: "bash"},
-                        {en: "3. Dump the flows again. You will now see new rules that the Ryu controller has installed to handle the traffic between h1 and h2.", fr: "3. Affichez à nouveau les flux. Vous verrez maintenant de nouvelles règles que le contrôleur Ryu a installées pour gérer le trafic entre h1 et h2.", code: "mininet> sh ovs-ofctl -O OpenFlow13 dump-flows s1", lang: "bash"},
+                        {en: "1. Open a web browser and navigate to <code>http://127.0.0.1:8080</code> to view the Flow Manager GUI. You should see your topology.", fr: "1. Ouvrez un navigateur web et allez à <code>http://127.0.0.1:8080</code> pour voir l'interface graphique de Flow Manager. Vous devriez voir votre topologie."},
+                        {en: "2. In the Mininet CLI, clear any existing flows from the switch to start fresh.", fr: "2. Dans le CLI de Mininet, effacez tous les flux existants du commutateur pour recommencer à zéro.", code: "mininet> sh ovs-ofctl -O OpenFlow13 del-flows s1", lang: "bash"},
+                        {en: "3. Try to ping from h1 to h2. The first ping may show a slight delay or packet loss as the switch contacts the controller.", fr: "3. Essayez de pinger de h1 à h2. Le premier ping peut montrer un léger retard ou une perte de paquet pendant que le commutateur contacte le contrôleur.", code: "mininet> h1 ping h2 -c 1", lang: "bash"},
+                        {en: "4. Dump the flows again. You will now see new rules that the Ryu controller has installed to handle the traffic. You can also see these flows in the Flow Manager GUI.", fr: "4. Affichez à nouveau les flux. Vous verrez maintenant de nouvelles règles que le contrôleur Ryu a installées pour gérer le trafic. Vous pouvez également voir ces flux dans l'interface graphique de Flow Manager.", code: "mininet> sh ovs-ofctl -O OpenFlow13 dump-flows s1", lang: "bash"},
                         {en: "<strong>Part 2: Proactive Demonstration</strong>", fr: "<strong>Partie 2 : Démonstration Proactive</strong>"},
-                        {en: "1. Stop the Ryu controller process (use `ps -fA | grep ryu` to find its PID and `sudo kill [PID]`). Clear the flows again.", fr: "1. Arrêtez le processus du contrôleur Ryu (utilisez `ps -fA | grep ryu` pour trouver son PID et `sudo kill [PID]`). Effacez à nouveau les flux.", code: "mininet> sh ovs-ofctl -O OpenFlow13 del-flows s1", lang: "bash"},
+                        {en: "1. Stop the Ryu controller process in the first terminal (Ctrl+C). Clear the flows from the switch in Mininet.", fr: "1. Arrêtez le processus du contrôleur Ryu dans le premier terminal (Ctrl+C). Effacez les flux du commutateur dans Mininet.", code: "mininet> sh ovs-ofctl -O OpenFlow13 del-flows s1", lang: "bash"},
                         {en: "2. Try to ping from h1 to h2. It will fail because there is no controller to provide instructions.", fr: "2. Essayez de pinger de h1 à h2. Cela échouera car il n'y a pas de contrôleur pour fournir des instructions.", code: "mininet> h1 ping h2 -c 1", lang: "bash"},
                         {en: "3. Manually install the flow rules to forward traffic between h1 (port 1) and h2 (port 2).", fr: "3. Installez manuellement les règles de flux pour transférer le trafic entre h1 (port 1) et h2 (port 2).", code: `mininet> sh ovs-ofctl -O OpenFlow13 add-flow s1 "priority=1,in_port=1,actions=output:2"\nmininet> sh ovs-ofctl -O OpenFlow13 add-flow s1 "priority=1,in_port=2,actions=output:1"`, lang: "bash"},
                         {en: "4. Try the ping again. It will succeed immediately because the forwarding rules were already present in the switch.", fr: "4. Réessayez le ping. Il réussira immédiatement car les règles de transfert étaient déjà présentes dans le commutateur.", code: "mininet> h1 ping h2 -c 1", lang: "bash"}
